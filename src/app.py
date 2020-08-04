@@ -76,11 +76,11 @@ class Interceptor:
                 "video": f"localhost:{video_port}"
             }
 
-        if original_request.path.startswith("/record/start") or original_request.path.startswith("/record/stop"):
-            session_id = path_components[2]
+        if original_request.path.startswith("/record/"):
+            session_id = original_request.query.fields[0][1]
             host_hash = session_id[0:32]
             host = mapping[host_hash]['video']
-            path_components.pop()
+            # path_components.pop()
 
         if len(path_components) > 3:
             session_id = path_components[3]
