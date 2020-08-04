@@ -100,13 +100,10 @@ class Interceptor:
         mapping[host_hash]["lastly_used"] = str(datetime.now())
 
     def response(self, flow):
-        original_request = flow.request
+        response = flow.response.content
 
-        original_response = flow.response
-        response = original_response.content
-
-        if original_request.path == "/wd/hub/session":
-            host_hash = hashlib.md5(f"localhost:{original_request.port}".encode('utf-8')).hexdigest()
+        if flow.request.path == "/wd/hub/session":
+            host_hash = hashlib.md5(f"localhost:{flow.request.port}".encode('utf-8')).hexdigest()
             content = json.loads(response.decode('utf-8'))
 
             session_id = content['value']['sessionId']
@@ -114,9 +111,9 @@ class Interceptor:
             response = json.dumps(content).encode('utf-8')
 
         flow.response = http.HTTPResponse.make(
-            original_response.status_code,
+            flow.response.status_code,
             response,
-            original_response.headers.fields
+            flow.response.headers.fields
         )
 
 
