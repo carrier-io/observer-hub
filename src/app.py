@@ -46,9 +46,12 @@ class Interceptor:
         pass
 
     def start_container(self):
-        container = docker_client.run("getcarrier/observer-chrome:latest",
-                                      detach=True,
-                                      ports={"4444": None, "9999": None})
+        container = docker_client.run(
+            "getcarrier/observer-chrome:latest",
+            detach=True,
+            ports={"4444": None, "9999": None},
+            environment=["RESOLUTION=1920x1080"]
+        )
         selenium_port = docker_client.port(container.short_id, 4444)
         video_port = docker_client.port(container.short_id, 9999)
         wait_for_agent("localhost", video_port)
