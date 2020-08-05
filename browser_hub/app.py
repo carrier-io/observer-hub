@@ -9,8 +9,8 @@ from mitmproxy import proxy, options
 from mitmproxy.tools.dump import DumpMaster
 from timeloop import Timeloop
 
-from src.docker_client import DockerClient
-from src.util import wait_for_agent
+from browser_hub.docker_client import DockerClient
+from browser_hub.util import wait_for_agent
 
 docker_client = DockerClient(docker.from_env())
 
@@ -120,14 +120,14 @@ class Interceptor:
         )
 
 
-def main(argv):
-    opts = options.Options(listen_host='127.0.0.1',
+def main():
+    opts = options.Options(listen_host='0.0.0.0',
                            listen_port=4444,
                            mode="transparent")
     pconf = proxy.config.ProxyConfig(opts)
     m = DumpMaster(opts)
     m.server = proxy.server.ProxyServer(pconf)
-    print('Intercepting Proxy listening on 8080')
+    print('Intercepting Proxy listening on 4444')
 
     m.addons.add(Interceptor())
     try:
@@ -138,4 +138,4 @@ def main(argv):
 
 if __name__ == '__main__':
     tl.start(block=False)
-    main(sys.argv)
+    main()
