@@ -1,13 +1,12 @@
 import hashlib
 import json
-import sys
-from datetime import timedelta, datetime
+from datetime import datetime
 
 import docker
+from apscheduler.schedulers.background import BackgroundScheduler
 from mitmproxy import http
 from mitmproxy import proxy, options
 from mitmproxy.tools.dump import DumpMaster
-from timeloop import Timeloop
 
 from browser_hub.docker_client import DockerClient
 from browser_hub.util import wait_for_agent
@@ -16,11 +15,10 @@ docker_client = DockerClient(docker.from_env())
 
 mapping = {}
 
-tl = Timeloop()
+scheduler = BackgroundScheduler()
 
 
-@tl.job(interval=timedelta(seconds=30))
-def job():
+def container_inspector_job():
     print(f'There are {len(mapping.keys())} containers running...')
     deleted = []
     for k, v in mapping.items():
@@ -120,7 +118,7 @@ class Interceptor:
         )
 
 
-def main():
+def start_proxy():
     opts = options.Options(listen_host='0.0.0.0',
                            listen_port=4444,
                            mode="transparent")
@@ -136,6 +134,11 @@ def main():
         m.shutdown()
 
 
+def main():
+    scheduler.add_job(container_inspector_job, 'interval', seconds=30)
+    scheduler.start()
+    start_proxy()
+
+
 if __name__ == '__main__':
-    tl.start(block=False)
     main()
