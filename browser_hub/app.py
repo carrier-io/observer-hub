@@ -108,6 +108,7 @@ class Interceptor:
 
 def start_container(browser_name):
     container_name = CONTAINERS[browser_name]
+    print(f"Starting container {container_name} ...")
     container = docker_client.run(
         container_name,
         detach=True,
