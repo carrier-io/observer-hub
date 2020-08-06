@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 from datetime import datetime
 
 import docker
@@ -11,11 +12,16 @@ from mitmproxy.tools.dump import DumpMaster
 from browser_hub.docker_client import DockerClient
 from browser_hub.util import wait_for_agent
 
+SCHEDULER_INTERVAL = int(os.environ.get("SCHEDULER_INTERVAL", 30))
+TIMEOUT = int(os.environ.get("TIMEOUT", 60))
+SELENIUM_PORT = int(os.environ.get("SELENIUM_PORT", 4444))
+VIDEO_PORT = int(os.environ.get("SELENIUM_PORT", 9999))
+SCREEN_RESOLUTION = os.environ.get("RESOLUTION", "1920x1080")
+
 docker_client = DockerClient(docker.from_env())
+scheduler = BackgroundScheduler()
 
 mapping = {}
-
-scheduler = BackgroundScheduler()
 
 
 def container_inspector_job():
@@ -31,7 +37,7 @@ def container_inspector_job():
 
         print(f"Container {container_id} was lastly used {diff} seconds ago")
 
-        if diff > 60:
+        if diff > TIMEOUT:
             docker_client.get_container(container_id).remove(force=True)
             deleted.append(k)
 
@@ -47,11 +53,11 @@ class Interceptor:
         container = docker_client.run(
             "getcarrier/observer-chrome:latest",
             detach=True,
-            ports={"4444": None, "9999": None},
-            environment=["RESOLUTION=1920x1080"]
+            ports={f"{SELENIUM_PORT}": None, f"{VIDEO_PORT}": None},
+            environment=[f"RESOLUTION={SCREEN_RESOLUTION}"]
         )
-        selenium_port = docker_client.port(container.short_id, 4444)
-        video_port = docker_client.port(container.short_id, 9999)
+        selenium_port = docker_client.port(container.short_id, SELENIUM_PORT)
+        video_port = docker_client.port(container.short_id, VIDEO_PORT)
         wait_for_agent("localhost", video_port)
 
         print(f'Container has been {container.id} started')
@@ -81,7 +87,6 @@ class Interceptor:
             session_id = original_request.query.fields[0][1]
             host_hash = session_id[0:32]
             host = mapping[host_hash]['video']
-            # path_components.pop()
 
         if len(path_components) > 3:
             session_id = path_components[3]
@@ -135,7 +140,7 @@ def start_proxy():
 
 
 def main():
-    scheduler.add_job(container_inspector_job, 'interval', seconds=30)
+    scheduler.add_job(container_inspector_job, 'interval', seconds=SCHEDULER_INTERVAL)
     scheduler.start()
     start_proxy()
 
