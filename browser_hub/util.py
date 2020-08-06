@@ -1,3 +1,4 @@
+import json
 from time import sleep
 
 import requests
@@ -21,3 +22,8 @@ def wait_for_hub(host, port):
         except:
             pass
         sleep(0.1)
+
+
+def get_desired_capabilities(original_request):
+    content = json.loads(original_request.content.decode('utf-8'))
+    return content['desiredCapabilities']

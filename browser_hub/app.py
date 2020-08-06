@@ -1,6 +1,5 @@
 import hashlib
 import json
-import os
 from datetime import datetime
 
 import docker
@@ -10,13 +9,8 @@ from mitmproxy import proxy, options
 from mitmproxy.tools.dump import DumpMaster
 
 from browser_hub.docker_client import DockerClient
-from browser_hub.util import wait_for_agent
-
-SCHEDULER_INTERVAL = int(os.environ.get("SCHEDULER_INTERVAL", 30))
-TIMEOUT = int(os.environ.get("TIMEOUT", 60))
-SELENIUM_PORT = int(os.environ.get("SELENIUM_PORT", 4444))
-VIDEO_PORT = int(os.environ.get("SELENIUM_PORT", 9999))
-SCREEN_RESOLUTION = os.environ.get("RESOLUTION", "1920x1080")
+from browser_hub.util import wait_for_agent, get_desired_capabilities
+from constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION, CONTAINERS
 
 docker_client = DockerClient(docker.from_env())
 scheduler = BackgroundScheduler()
@@ -49,20 +43,6 @@ class Interceptor:
     def __init__(self):
         pass
 
-    def start_container(self):
-        container = docker_client.run(
-            "getcarrier/observer-chrome:latest",
-            detach=True,
-            ports={f"{SELENIUM_PORT}": None, f"{VIDEO_PORT}": None},
-            environment=[f"RESOLUTION={SCREEN_RESOLUTION}"]
-        )
-        selenium_port = docker_client.port(container.short_id, SELENIUM_PORT)
-        video_port = docker_client.port(container.short_id, VIDEO_PORT)
-        wait_for_agent("localhost", video_port)
-
-        print(f'Container has been {container.id} started')
-        return container.short_id, selenium_port, video_port
-
     def request(self, flow):
         original_request = flow.request
         print(original_request.path)
@@ -73,7 +53,10 @@ class Interceptor:
         host_hash = None
 
         if original_request.path == "/wd/hub/session":
-            container_id, selenium_port, video_port = self.start_container()
+            desired_capabilities = get_desired_capabilities(original_request)
+            browser_name = desired_capabilities['browserName']
+
+            container_id, selenium_port, video_port = start_container(browser_name)
 
             host = f"localhost:{selenium_port}"
             host_hash = hashlib.md5(host.encode('utf-8')).hexdigest()
@@ -121,6 +104,22 @@ class Interceptor:
             response,
             flow.response.headers.fields
         )
+
+
+def start_container(browser_name):
+    container_name = CONTAINERS[browser_name]
+    container = docker_client.run(
+        container_name,
+        detach=True,
+        ports={f"{SELENIUM_PORT}": None, f"{VIDEO_PORT}": None},
+        environment=[f"RESOLUTION={SCREEN_RESOLUTION}"]
+    )
+    selenium_port = docker_client.port(container.short_id, SELENIUM_PORT)
+    video_port = docker_client.port(container.short_id, VIDEO_PORT)
+    wait_for_agent("localhost", video_port)
+
+    print(f'Container has been {container.id} started')
+    return container.short_id, selenium_port, video_port
 
 
 def start_proxy():
