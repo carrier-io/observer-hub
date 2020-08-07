@@ -13,7 +13,8 @@ from browser_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VI
 from browser_hub.db import get_from_storage, save_to_storage
 from browser_hub.docker_client import DockerClient
 from browser_hub.perf import compute_results_for_simple_page, process_results_for_pages
-from browser_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub
+from browser_hub.processors import process_request
+from browser_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable
 
 docker_client = DockerClient(docker.from_env())
 scheduler = BackgroundScheduler()
@@ -22,6 +23,8 @@ mapping = {}
 config = read_config()
 
 execution_results = []
+
+requests = {}
 
 
 def container_inspector_job():
@@ -60,9 +63,18 @@ class Interceptor:
         print(original_request.path)
 
         path_components = list(original_request.path_components)
-
         host = None
         host_hash = None
+
+        headers = original_request.headers.fields
+        if original_request.path.endswith("element"):
+            session_id = path_components[3]
+            previous_command = requests[session_id]
+            if not is_actionable(previous_command):
+                host_hash = session_id[0:32]
+                host = mapping[host_hash]['host']
+                results = process_request(host, session_id[32:])
+                execution_results.append(results)
 
         if original_request.path == "/wd/hub/session":
             desired_capabilities = get_desired_capabilities(original_request)
@@ -89,6 +101,7 @@ class Interceptor:
             host_hash = session_id[0:32]
             host = mapping[host_hash]['host']
             path_components[3] = session_id[32:]
+            requests[session_id] = original_request.path
 
         url = f"{original_request.scheme}://{host}/{'/'.join(path_components)}"
 
@@ -96,7 +109,7 @@ class Interceptor:
             method=original_request.method,
             url=url,
             content=original_request.content,
-            headers=original_request.headers.fields
+            headers=headers
         )
 
         mapping[host_hash]["lastly_used"] = str(datetime.now())
@@ -112,32 +125,9 @@ class Interceptor:
             content['value']['sessionId'] = host_hash + session_id
             response = json.dumps(content).encode('utf-8')
 
-        elif flow.request.path.endswith("element"):
-            host = flow.request.host
-            port = flow.request.port
-            session_id = flow.request.path_components[3]
-
-            load_event_end = selenium.get_performance_timing(host, port, session_id)['loadEventEnd']
-            data = get_from_storage(session_id)
-            if data is None or data['load_event_end'] != load_event_end:
-                results = compute_results_for_simple_page(host, port, session_id)
-                results['info']['title'] = selenium.page_title(host, port, session_id)
-                dom = selenium.get_dom_size(host, port, session_id)
-
-                save_to_storage(session_id, {
-                    "dom_size": dom,
-                    "results": results,
-                    "load_event_end": load_event_end,
-                    "perf_entities": []
-                })
-
-                execution_results.append(results)
-
-            else:
-                perf_entities = data['perf_entities']
-                dom = data['dom_size']
-                previous_results = data['results']
-                print()
+        # elif flow.request.path.endswith("element"):
+        #     results = process_request(flow.request)
+        #     execution_results.append(results)
 
         flow.response = http.HTTPResponse.make(
             flow.response.status_code,

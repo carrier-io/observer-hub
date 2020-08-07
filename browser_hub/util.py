@@ -34,3 +34,8 @@ def get_desired_capabilities(original_request):
 def read_config():
     with open(CONFIG_PATH) as f:
         return json.load(f)
+
+
+def is_actionable(command):
+    print(command)
+    return "/element" in command

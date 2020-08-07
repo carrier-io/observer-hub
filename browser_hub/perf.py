@@ -10,8 +10,8 @@ from browser_hub.audits import accessibility_audit, bestpractice_audit, performa
 from browser_hub.constants import REPORT_PATH
 
 
-def compute_results_for_simple_page(host, port, session_id):
-    metrics = selenium.get_performance_metrics(host, port, session_id)
+def compute_results_for_simple_page(perf_agent):
+    metrics = perf_agent.get_performance_metrics()
     resources = copy.deepcopy(metrics['performanceResources'])
 
     sorted_items = sorted(resources, key=lambda k: k['startTime'])
