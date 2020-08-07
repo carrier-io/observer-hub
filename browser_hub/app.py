@@ -9,13 +9,14 @@ from mitmproxy import proxy, options
 from mitmproxy.tools.dump import DumpMaster
 
 from browser_hub.docker_client import DockerClient
-from browser_hub.util import wait_for_agent, get_desired_capabilities
-from constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION, CONTAINERS
+from browser_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub
+from constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION, CONFIG_PATH
 
 docker_client = DockerClient(docker.from_env())
 scheduler = BackgroundScheduler()
 
 mapping = {}
+config = read_config()
 
 
 def container_inspector_job():
@@ -55,8 +56,9 @@ class Interceptor:
         if original_request.path == "/wd/hub/session":
             desired_capabilities = get_desired_capabilities(original_request)
             browser_name = desired_capabilities['browserName']
+            version = desired_capabilities['version']
 
-            container_id, selenium_port, video_port = start_container(browser_name)
+            container_id, selenium_port, video_port = start_container(browser_name, version)
 
             host = f"localhost:{selenium_port}"
             host_hash = hashlib.md5(host.encode('utf-8')).hexdigest()
@@ -106,21 +108,33 @@ class Interceptor:
         )
 
 
-def start_container(browser_name):
-    container_name = CONTAINERS[browser_name]
-    print(f"Starting container {container_name} ...")
+def start_container(browser_name, version):
+    container_config = get_container_configuration(browser_name, version)
+    container_image = container_config['image']
+
+    print(f"Starting container {container_image} ...")
     container = docker_client.run(
-        container_name,
+        container_image,
         detach=True,
         ports={f"{SELENIUM_PORT}": None, f"{VIDEO_PORT}": None},
-        environment=[f"RESOLUTION={SCREEN_RESOLUTION}"]
+        environment=[f"RESOLUTION={SCREEN_RESOLUTION}"],
+        privileged=True
     )
     selenium_port = docker_client.port(container.short_id, SELENIUM_PORT)
     video_port = docker_client.port(container.short_id, VIDEO_PORT)
+    wait_for_hub("localhost", selenium_port)
     wait_for_agent("localhost", video_port)
 
     print(f'Container has been {container.id} started')
     return container.short_id, selenium_port, video_port
+
+
+def get_container_configuration(browser_name, version):
+    cfg = config[browser_name]
+    if not version:
+        version = cfg['default']
+
+    return cfg['versions'][version]
 
 
 def start_proxy():

@@ -3,6 +3,8 @@ from time import sleep
 
 import requests
 
+from constants import CONFIG_PATH
+
 
 def wait_for_agent(host, port):
     for _ in range(120):
@@ -27,3 +29,8 @@ def wait_for_hub(host, port):
 def get_desired_capabilities(original_request):
     content = json.loads(original_request.content.decode('utf-8'))
     return content['desiredCapabilities']
+
+
+def read_config():
+    with open(CONFIG_PATH) as f:
+        return json.load(f)
