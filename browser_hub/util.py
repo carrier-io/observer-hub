@@ -3,7 +3,7 @@ from time import sleep
 
 import requests
 
-from constants import CONFIG_PATH
+from browser_hub.constants import CONFIG_PATH
 
 
 def wait_for_agent(host, port):

@@ -10,7 +10,7 @@ from mitmproxy.tools.dump import DumpMaster
 
 from browser_hub.docker_client import DockerClient
 from browser_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub
-from constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION, CONFIG_PATH
+from browser_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION, CONFIG_PATH
 
 docker_client = DockerClient(docker.from_env())
 scheduler = BackgroundScheduler()
