@@ -1,7 +1,15 @@
 import os
 import tempfile
+from time import time
 
 from requests import get
+
+
+def start_video_recording(video_host):
+    start_time = time()
+    start_recording(video_host)
+    current_time = time() - start_time
+    return int(current_time)
 
 
 def start_recording(host):

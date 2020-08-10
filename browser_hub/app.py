@@ -14,7 +14,7 @@ from browser_hub.docker_client import DockerClient
 from browser_hub.perf import process_results_for_pages
 from browser_hub.processors import process_request
 from browser_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable
-from browser_hub.video import start_recording, stop_recording
+from browser_hub.video import start_recording, stop_recording, start_video_recording
 
 docker_client = DockerClient(docker.from_env())
 scheduler = BackgroundScheduler()
@@ -86,7 +86,7 @@ class Interceptor:
 
             execution_results.append(results)
 
-            start_time = self.start_video_recording(video_host)
+            start_time = start_video_recording(video_host)
             mapping[host_hash]['start_time'] = start_time
 
         if original_request.path == "/wd/hub/session":
@@ -133,7 +133,7 @@ class Interceptor:
             response = json.dumps(content).encode('utf-8')
 
             video_host = mapping[host_hash]["video"]
-            start_time = self.start_video_recording(video_host)
+            start_time = start_video_recording(video_host)
             mapping[host_hash]['start_time'] = start_time
 
         flow.response = http.HTTPResponse.make(
@@ -141,12 +141,6 @@ class Interceptor:
             response,
             flow.response.headers.fields
         )
-
-    def start_video_recording(self, video_host):
-        start_time = time()
-        start_recording(video_host)
-        current_time = time() - start_time
-        return int(current_time)
 
 
 def start_container(browser_name, version):
