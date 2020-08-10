@@ -1,6 +1,6 @@
 import json
 from time import sleep
-
+from deepdiff import DeepDiff
 import requests
 
 from browser_hub.constants import CONFIG_PATH
@@ -37,5 +37,19 @@ def read_config():
 
 
 def is_actionable(command):
-    print(command)
-    return "/element" in command
+    return "/click" in command
+
+
+def is_performance_entities_changed(old_entities, latest_entries):
+    ddiff = DeepDiff(old_entities, latest_entries, ignore_order=True)
+    if not ddiff:
+        return False
+
+    if ddiff['iterable_item_added'] or ddiff['iterable_item_removed']:
+        return True
+
+    return False
+
+
+def is_dom_changed(old_dom, new_dom):
+    return old_dom != new_dom

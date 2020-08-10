@@ -42,8 +42,9 @@ def container_inspector_job():
 
         if diff > TIMEOUT:
             generate_report()
-
+            print(f"Container {container_id} usage time exceeded timeout!")
             docker_client.get_container(container_id).remove(force=True)
+            print(f"Container {container_id} was deleted!")
             deleted.append(k)
 
     for d in deleted:
@@ -52,6 +53,7 @@ def container_inspector_job():
 
 def generate_report():
     process_results_for_pages(execution_results, {})
+    execution_results.clear()
 
 
 class Interceptor:
@@ -61,20 +63,20 @@ class Interceptor:
     def request(self, flow):
         original_request = flow.request
         print(original_request.path)
+        print(original_request.content)
 
         path_components = list(original_request.path_components)
         host = None
         host_hash = None
 
         headers = original_request.headers.fields
-        if original_request.path.endswith("element"):
+
+        if "element" in original_request.path and is_actionable(original_request.path):
             session_id = path_components[3]
-            previous_command = requests[session_id]
-            if not is_actionable(previous_command):
-                host_hash = session_id[0:32]
-                host = mapping[host_hash]['host']
-                results = process_request(host, session_id[32:])
-                execution_results.append(results)
+            host_hash = session_id[0:32]
+            host = mapping[host_hash]['host']
+            results = process_request(original_request, host, session_id[32:])
+            execution_results.append(results)
 
         if original_request.path == "/wd/hub/session":
             desired_capabilities = get_desired_capabilities(original_request)
@@ -101,7 +103,6 @@ class Interceptor:
             host_hash = session_id[0:32]
             host = mapping[host_hash]['host']
             path_components[3] = session_id[32:]
-            requests[session_id] = original_request.path
 
         url = f"{original_request.scheme}://{host}/{'/'.join(path_components)}"
 
@@ -124,10 +125,6 @@ class Interceptor:
             session_id = content['value']['sessionId']
             content['value']['sessionId'] = host_hash + session_id
             response = json.dumps(content).encode('utf-8')
-
-        # elif flow.request.path.endswith("element"):
-        #     results = process_request(flow.request)
-        #     execution_results.append(results)
 
         flow.response = http.HTTPResponse.make(
             flow.response.status_code,
