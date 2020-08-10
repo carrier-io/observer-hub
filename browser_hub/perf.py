@@ -4,6 +4,7 @@ import os
 import re
 from multiprocessing import Pool
 from subprocess import Popen, PIPE
+from time import sleep
 from uuid import uuid4
 
 from deepdiff import DeepDiff
@@ -206,8 +207,8 @@ class HtmlReporter(object):
                 "test_name": page_name,
                 "processing_path": self.processing_path,
             } for part in range(start, end, (end - start) // 8)][1:]
-            if not os.path.exists(os.path.join(self.processing_path, page_name)):
-                os.mkdir(os.path.join(self.processing_path, sanitize(page_name)))
+
+            os.makedirs(os.path.join(self.processing_path, sanitize(page_name)), exist_ok=True)
             res = p.map(trim_screenshot, process_params)
         except:
             from traceback import format_exc

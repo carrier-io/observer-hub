@@ -75,7 +75,8 @@ class Interceptor:
             session_id = path_components[3]
             host_hash = session_id[0:32]
             host = mapping[host_hash]['host']
-            start_time = int(mapping[host_hash]['start_time'])
+            start_time = mapping[host_hash]['start_time']
+
             results = process_request(original_request, host, session_id[32:], start_time)
 
             video_host = mapping[host_hash]['video']
@@ -84,6 +85,11 @@ class Interceptor:
             results.video_path = video_path
 
             execution_results.append(results)
+
+            start_time = time()
+            start_recording(video_host)
+            current_time = time() - start_time
+            mapping[host_hash]['start_time'] = int(current_time)
 
         if original_request.path == "/wd/hub/session":
             desired_capabilities = get_desired_capabilities(original_request)
@@ -100,10 +106,10 @@ class Interceptor:
                 "video": f"localhost:{video_port}"
             }
 
-        if original_request.path.startswith("/record/"):
-            session_id = original_request.query.fields[0][1]
-            host_hash = session_id[0:32]
-            host = mapping[host_hash]['video']
+        # if original_request.path.startswith("/record/"):
+        #     session_id = original_request.query.fields[0][1]
+        #     host_hash = session_id[0:32]
+        #     host = mapping[host_hash]['video']
 
         if len(path_components) > 3:
             session_id = path_components[3]
@@ -134,10 +140,11 @@ class Interceptor:
             response = json.dumps(content).encode('utf-8')
 
             video_host = mapping[host_hash]["video"]
+
             start_time = time()
             start_recording(video_host)
             current_time = time() - start_time
-            mapping[host_hash]['start_time'] = current_time
+            mapping[host_hash]['start_time'] = int(current_time)
 
         flow.response = http.HTTPResponse.make(
             flow.response.status_code,
