@@ -89,6 +89,21 @@ class Interceptor:
             start_time = start_video_recording(video_host)
             mapping[host_hash]['start_time'] = start_time
 
+        if "/wd/hub/session" in original_request.path and original_request.method == "DELETE":
+            session_id = path_components[3]
+            host_hash = session_id[0:32]
+            host = mapping[host_hash]['host']
+            start_time = mapping[host_hash]['start_time']
+
+            results = process_request(original_request, host, session_id[32:], start_time)
+
+            video_host = mapping[host_hash]['video']
+            video_folder, video_path = stop_recording(video_host)
+            results.video_folder = video_folder
+            results.video_path = video_path
+
+            execution_results.append(results)
+
         if original_request.path == "/wd/hub/session":
             desired_capabilities = get_desired_capabilities(original_request)
             browser_name = desired_capabilities['browserName']
