@@ -86,10 +86,8 @@ class Interceptor:
 
             execution_results.append(results)
 
-            start_time = time()
-            start_recording(video_host)
-            current_time = time() - start_time
-            mapping[host_hash]['start_time'] = int(current_time)
+            start_time = self.start_video_recording(video_host)
+            mapping[host_hash]['start_time'] = start_time
 
         if original_request.path == "/wd/hub/session":
             desired_capabilities = get_desired_capabilities(original_request)
@@ -105,11 +103,6 @@ class Interceptor:
                 "container_id": container_id,
                 "video": f"localhost:{video_port}"
             }
-
-        # if original_request.path.startswith("/record/"):
-        #     session_id = original_request.query.fields[0][1]
-        #     host_hash = session_id[0:32]
-        #     host = mapping[host_hash]['video']
 
         if len(path_components) > 3:
             session_id = path_components[3]
@@ -140,17 +133,20 @@ class Interceptor:
             response = json.dumps(content).encode('utf-8')
 
             video_host = mapping[host_hash]["video"]
-
-            start_time = time()
-            start_recording(video_host)
-            current_time = time() - start_time
-            mapping[host_hash]['start_time'] = int(current_time)
+            start_time = self.start_video_recording(video_host)
+            mapping[host_hash]['start_time'] = start_time
 
         flow.response = http.HTTPResponse.make(
             flow.response.status_code,
             response,
             flow.response.headers.fields
         )
+
+    def start_video_recording(self, video_host):
+        start_time = time()
+        start_recording(video_host)
+        current_time = time() - start_time
+        return int(current_time)
 
 
 def start_container(browser_name, version):
