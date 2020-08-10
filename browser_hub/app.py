@@ -40,7 +40,7 @@ def container_inspector_job():
 
         print(f"Container {container_id} was lastly used {diff} seconds ago")
 
-        if diff > TIMEOUT:
+        if diff >= TIMEOUT:
             generate_report()
             print(f"Container {container_id} usage time exceeded timeout!")
             docker_client.get_container(container_id).remove(force=True)
