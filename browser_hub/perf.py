@@ -3,13 +3,14 @@ import copy
 import os
 import re
 from multiprocessing import Pool
+from subprocess import Popen, PIPE
 from uuid import uuid4
 
 from deepdiff import DeepDiff
 
 from browser_hub import selenium
 from browser_hub.audits import accessibility_audit, bestpractice_audit, performance_audit, privacy_audit
-from browser_hub.constants import REPORT_PATH
+from browser_hub.constants import REPORT_PATH, FFMPEG_PATH
 
 
 def compute_results_for_simple_page(perf_agent):
@@ -130,9 +131,9 @@ def generate_html_report(execution_result, threshold_results):
 
     test_status = "passed"
 
-    reporter = HtmlReporter(test_status, None,
+    reporter = HtmlReporter(test_status, execution_result.video_path,
                             execution_result.results,
-                            None,
+                            execution_result.video_folder,
                             execution_result.screenshot_path)
 
     report = reporter.save_report()
@@ -143,18 +144,17 @@ def sanitize(filename):
 
 
 def trim_screenshot(kwargs):
-    pass
-    # try:
-    #     image_path = f'{os.path.join(kwargs["processing_path"], sanitize(kwargs["test_name"]), str(kwargs["ms"]))}_out.jpg'
-    #     command = f'{FFMPEG_PATH} -ss {str(round(kwargs["ms"] / 1000, 3))} -i {kwargs["video_path"]} ' \
-    #               f'-vframes 1 {image_path}'
-    #     Popen(command, stderr=PIPE, shell=True, universal_newlines=True).communicate()
-    #     with open(image_path, "rb") as image_file:
-    #         return {kwargs["ms"]: base64.b64encode(image_file.read()).decode("utf-8")}
-    # except FileNotFoundError:
-    #     from traceback import format_exc
-    #     logger.error(format_exc())
-    #     return {}
+    try:
+        image_path = f'{os.path.join(kwargs["processing_path"], sanitize(kwargs["test_name"]), str(kwargs["ms"]))}_out.jpg'
+        command = f'{FFMPEG_PATH} -ss {str(round(kwargs["ms"] / 1000, 3))} -i {kwargs["video_path"]} ' \
+                  f'-vframes 1 {image_path}'
+        Popen(command, stderr=PIPE, shell=True, universal_newlines=True).communicate()
+        with open(image_path, "rb") as image_file:
+            return {kwargs["ms"]: base64.b64encode(image_file.read()).decode("utf-8")}
+    except FileNotFoundError:
+        from traceback import format_exc
+        print(format_exc())
+        return {}
 
 
 class HtmlReporter(object):
@@ -195,6 +195,7 @@ class HtmlReporter(object):
                                        base64_full_page_screen=base64_encoded_string)
 
     def concut_video(self, start, end, page_name, video_path):
+        print(f"Concut video {video_path}")
         p = Pool(7)
         res = []
         try:

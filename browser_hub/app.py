@@ -1,6 +1,7 @@
 import hashlib
 import json
 from datetime import datetime
+from time import time
 
 import docker
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -8,13 +9,12 @@ from mitmproxy import http
 from mitmproxy import proxy, options
 from mitmproxy.tools.dump import DumpMaster
 
-from browser_hub import selenium
 from browser_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION
-from browser_hub.db import get_from_storage, save_to_storage
 from browser_hub.docker_client import DockerClient
-from browser_hub.perf import compute_results_for_simple_page, process_results_for_pages
+from browser_hub.perf import process_results_for_pages
 from browser_hub.processors import process_request
 from browser_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable
+from browser_hub.video import start_recording, stop_recording
 
 docker_client = DockerClient(docker.from_env())
 scheduler = BackgroundScheduler()
@@ -75,7 +75,14 @@ class Interceptor:
             session_id = path_components[3]
             host_hash = session_id[0:32]
             host = mapping[host_hash]['host']
-            results = process_request(original_request, host, session_id[32:])
+            start_time = int(mapping[host_hash]['start_time'])
+            results = process_request(original_request, host, session_id[32:], start_time)
+
+            video_host = mapping[host_hash]['video']
+            video_folder, video_path = stop_recording(video_host)
+            results.video_folder = video_folder
+            results.video_path = video_path
+
             execution_results.append(results)
 
         if original_request.path == "/wd/hub/session":
@@ -125,6 +132,12 @@ class Interceptor:
             session_id = content['value']['sessionId']
             content['value']['sessionId'] = host_hash + session_id
             response = json.dumps(content).encode('utf-8')
+
+            video_host = mapping[host_hash]["video"]
+            start_time = time()
+            start_recording(video_host)
+            current_time = time() - start_time
+            mapping[host_hash]['start_time'] = current_time
 
         flow.response = http.HTTPResponse.make(
             flow.response.status_code,

@@ -8,7 +8,7 @@ from browser_hub.selenium import PerfAgent
 from browser_hub.util import is_performance_entities_changed, is_dom_changed
 
 
-def process_request(original_request, host, session_id):
+def process_request(original_request, host, session_id, start_time):
     # host = request.host
     # port = request.port
     # session_id = request.path_components[3]
@@ -28,7 +28,7 @@ def process_request(original_request, host, session_id):
             "load_event_end": load_event_end,
             "perf_entities": []
         })
-
+        results['info']['testStart'] = start_time
         screenshot_path = perf_agent.take_screenshot(f"/tmp/{uuid4()}.png")
 
         return ExecutionResult(results, screenshot_path)
@@ -43,6 +43,7 @@ def process_request(original_request, host, session_id):
         new_dom = perf_agent.get_dom_size()
         if is_entities_changed and is_dom_changed(old_dom, new_dom):
             latest_results = perf_agent.get_performance_metrics()
+            latest_results['info']['testStart'] = start_time
             results = compute_results_for_spa(previous_results, latest_results)
 
             save_to_storage(session_id, {
@@ -55,3 +56,5 @@ def process_request(original_request, host, session_id):
             screenshot_path = perf_agent.take_screenshot(f"/tmp/{uuid4()}.png")
 
             return ExecutionResult(results, screenshot_path)
+
+        return ExecutionResult(None, None)

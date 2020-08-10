@@ -7,6 +7,7 @@ VIDEO_PORT = int(os.environ.get("SELENIUM_PORT", 9999))
 SCREEN_RESOLUTION = os.environ.get("RESOLUTION", "1920x1080")
 CONFIG_PATH = os.environ.get("CONFIG_PATH", "/tmp/browser_hub/config.json")
 REPORT_PATH = '/tmp/reports/'
+FFMPEG_PATH = os.environ.get("ffmpeg_path", "ffmpeg")
 
 check_ui_performance = '''return (function() {
 var metas=Array.prototype.slice.call(document.querySelectorAll('meta[name][content]'));
