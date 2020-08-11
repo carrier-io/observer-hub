@@ -1,9 +1,8 @@
 from uuid import uuid4
 
-from browser_hub import selenium
 from browser_hub.db import get_from_storage, save_to_storage
 from browser_hub.execution_result import ExecutionResult
-from browser_hub.perf import compute_results_for_simple_page, compute_results_for_spa
+from browser_hub.processors.results_processor import compute_results_for_simple_page, compute_results_for_spa
 from browser_hub.selenium import PerfAgent
 from browser_hub.util import is_performance_entities_changed, is_dom_changed
 

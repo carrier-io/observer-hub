@@ -1,7 +1,6 @@
 import hashlib
 import json
 from datetime import datetime
-from time import time
 
 import docker
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -11,10 +10,10 @@ from mitmproxy.tools.dump import DumpMaster
 
 from browser_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION
 from browser_hub.docker_client import DockerClient
-from browser_hub.perf import process_results_for_pages
-from browser_hub.processors import process_request
+from browser_hub.processors.request_processors import process_request
+from browser_hub.processors.results_processor import process_results_for_pages
 from browser_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable
-from browser_hub.video import start_recording, stop_recording, start_video_recording
+from browser_hub.video import stop_recording, start_video_recording
 
 docker_client = DockerClient(docker.from_env())
 scheduler = BackgroundScheduler()
