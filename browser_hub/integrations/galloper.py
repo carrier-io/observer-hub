@@ -59,15 +59,14 @@ def notify_on_test_start(desired_capabilities):
     return res.json()['id']
 
 
-def notify_on_test_end(total_thresholds, exception, junit_report_name):
-    report_id = get_from_storage('report_id')
+def notify_on_test_end(report_id, total_thresholds, exception, junit_report_name):
     logger.info(f"About to notify on test end for report {report_id}")
 
     data = {
         "report_id": report_id,
         "time": datetime.now(tz=pytz.timezone(TZ)).strftime('%Y-%m-%d %H:%M:%S'),
-        "thresholds_total": total_thresholds["total"],
-        "thresholds_failed": total_thresholds["failed"]
+        "thresholds_total": total_thresholds.get("total", 0),
+        "thresholds_failed": total_thresholds.get("failed", 0)
     }
 
     if exception:

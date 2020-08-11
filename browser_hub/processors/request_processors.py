@@ -1,3 +1,4 @@
+from urllib.parse import urlparse
 from uuid import uuid4
 
 from browser_hub.db import get_from_storage, save_to_storage
@@ -16,6 +17,10 @@ def process_request(original_request, host, session_id, start_time):
     load_event_end = perf_agent.get_performance_timing()['loadEventEnd']
     data = get_from_storage(session_id)
 
+    results = None
+    screenshot_path = None
+    results_type = "page"
+
     if data is None or data['load_event_end'] != load_event_end:
         results = compute_results_for_simple_page(perf_agent)
         results['info']['title'] = perf_agent.page_title()
@@ -29,9 +34,6 @@ def process_request(original_request, host, session_id, start_time):
         })
 
         results['info']['testStart'] = start_time
-        screenshot_path = perf_agent.take_screenshot(f"/tmp/{uuid4()}.png")
-
-        return ExecutionResult(results, screenshot_path)
 
     else:
         perf_entities = data['perf_entities']
@@ -53,7 +55,18 @@ def process_request(original_request, host, session_id, start_time):
                 "perf_entities": latest_pef_entries
             })
 
-            screenshot_path = perf_agent.take_screenshot(f"/tmp/{uuid4()}.png")
-            return ExecutionResult(results, screenshot_path, results_type="action")
+            results_type = "action"
 
-        return ExecutionResult(None)
+    screenshot_path = perf_agent.take_screenshot(f"/tmp/{uuid4()}.png")
+    page_identifier = get_page_identifier(results['info']['title'], current_command)
+    return ExecutionResult(results, screenshot_path, results_type)
+
+
+def get_page_identifier(title, current_command):
+    current_url = get_current_url()
+    parsed_url = urlparse(current_url)
+    comment = current_command['comment']
+    if comment:
+        title = comment
+
+    return f"{title}:{parsed_url.path}@{current_command['command']}({current_command['target']})"

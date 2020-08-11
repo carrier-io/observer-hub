@@ -34,6 +34,10 @@ class PerfAgent(object):
     def get_performance_entities(self):
         return self.__execute_script("return performance.getEntriesByType('resource')")
 
+    def get_current_url(self):
+        res = requests.get(f'http://{self.host}/wd/hub/session/{self.session_id}/url')
+        return res.json()['value']
+
     def take_screenshot(self, filename):
         res = requests.get(f'http://{self.host}/wd/hub/session/{self.session_id}/screenshot')
         encoded_data = res.json()['value']

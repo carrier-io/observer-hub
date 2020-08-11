@@ -12,7 +12,8 @@ from browser_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VI
 from browser_hub.docker_client import DockerClient
 from browser_hub.integrations.galloper import notify_on_test_start, notify_on_command_end
 from browser_hub.processors.request_processors import process_request
-from browser_hub.processors.results_processor import process_results_for_pages, generate_html_report
+from browser_hub.processors.results_processor import process_results_for_pages, generate_html_report, \
+    process_results_for_test
 from browser_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable
 from browser_hub.video import stop_recording, start_video_recording
 
@@ -39,7 +40,7 @@ def container_inspector_job():
         print(f"Container {container_id} was lastly used {diff} seconds ago")
 
         if diff >= TIMEOUT:
-            generate_report()
+            generate_report(v)
             print(f"Container {container_id} usage time exceeded timeout!")
             docker_client.get_container(container_id).remove(force=True)
             print(f"Container {container_id} was deleted!")
@@ -49,8 +50,15 @@ def container_inspector_job():
         mapping.pop(d, None)
 
 
-def generate_report():
-    process_results_for_pages(execution_results, {})
+def generate_report(args):
+    # process_results_for_pages(execution_results, {})
+    report_id = args['report_id']
+    browser_name = args['desired_capabilities']['browserName']
+    version = args['desired_capabilities']['version']
+
+    test_name = f"{browser_name}_{version}"
+
+    process_results_for_test(report_id, test_name, execution_results, [], True)
     execution_results.clear()
 
 
@@ -121,7 +129,8 @@ class Interceptor:
                 "host": f"localhost:{selenium_port}",
                 "container_id": container_id,
                 "video": f"localhost:{video_port}",
-                "report_id": report_id
+                "report_id": report_id,
+                "desired_capabilities": desired_capabilities
             }
 
         if len(path_components) > 3:
