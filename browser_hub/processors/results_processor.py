@@ -128,4 +128,4 @@ def generate_html_report(execution_result, threshold_results):
                             execution_result.video_folder,
                             execution_result.screenshot_path)
 
-    report = reporter.save_report()
+    return reporter.save_report()

@@ -1,9 +1,18 @@
 import json
+import logging
 from time import sleep
 from deepdiff import DeepDiff
 import requests
 
 from browser_hub.constants import CONFIG_PATH
+
+logger = logging.getLogger('Browser hub')
+
+handler = logging.StreamHandler()
+formatter = logging.Formatter('[%(name)s] - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 
 def wait_for_agent(host, port):

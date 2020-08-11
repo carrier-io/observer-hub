@@ -4,3 +4,5 @@ docker==4.2.2
 requests==2.24.0
 apscheduler==3.6.3
 deepdiff~=5.0.2
+influxdb~=5.3.0
+pytz~=2020.1

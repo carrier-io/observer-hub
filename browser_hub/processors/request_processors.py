@@ -1,9 +1,9 @@
 from uuid import uuid4
 
 from browser_hub.db import get_from_storage, save_to_storage
-from browser_hub.execution_result import ExecutionResult
+from browser_hub.models.execution_result import ExecutionResult
 from browser_hub.processors.results_processor import compute_results_for_simple_page, compute_results_for_spa
-from browser_hub.selenium import PerfAgent
+from browser_hub.pert_agent import PerfAgent
 from browser_hub.util import is_performance_entities_changed, is_dom_changed
 
 
@@ -27,6 +27,7 @@ def process_request(original_request, host, session_id, start_time):
             "load_event_end": load_event_end,
             "perf_entities": []
         })
+
         results['info']['testStart'] = start_time
         screenshot_path = perf_agent.take_screenshot(f"/tmp/{uuid4()}.png")
 
@@ -53,7 +54,6 @@ def process_request(original_request, host, session_id, start_time):
             })
 
             screenshot_path = perf_agent.take_screenshot(f"/tmp/{uuid4()}.png")
+            return ExecutionResult(results, screenshot_path, results_type="action")
 
-            return ExecutionResult(results, screenshot_path)
-
-        return ExecutionResult(None, None)
+        return ExecutionResult(None)

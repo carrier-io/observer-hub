@@ -111,7 +111,15 @@ class HtmlReporter(object):
         print(f"Generate html report {report_file_name}")
         with open(report_file_name, 'w') as f:
             f.write(self.html)
-        # return HtmlReport(self.title, report_uuid)
+        return HtmlReport(self.title, report_uuid)
+
+
+class HtmlReport(object):
+
+    def __init__(self, title, report_uuid):
+        self.report_uuid = report_uuid
+        self.file_name = f"{title}_{report_uuid}.html"
+        self.path = f"{REPORT_PATH}{self.file_name}"
 
 
 def sanitize(filename):

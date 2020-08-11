@@ -12,11 +12,13 @@ def save_to_storage(key, value):
 
 
 def get_from_storage(key):
-    db = shelve.open(DB_NAME, flag='r')
+    db = None
     try:
+        db = shelve.open(DB_NAME, flag='r')
         existing = db[key]
     except Exception as e:
         return None
     finally:
-        db.close()
+        if db:
+            db.close()
     return existing

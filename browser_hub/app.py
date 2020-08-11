@@ -10,19 +10,18 @@ from mitmproxy.tools.dump import DumpMaster
 
 from browser_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION
 from browser_hub.docker_client import DockerClient
+from browser_hub.integrations.galloper import notify_on_test_start, notify_on_command_end
 from browser_hub.processors.request_processors import process_request
-from browser_hub.processors.results_processor import process_results_for_pages
+from browser_hub.processors.results_processor import process_results_for_pages, generate_html_report
 from browser_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable
 from browser_hub.video import stop_recording, start_video_recording
 
 docker_client = DockerClient(docker.from_env())
 scheduler = BackgroundScheduler()
-
-mapping = {}
 config = read_config()
 
+mapping = {}
 execution_results = []
-
 requests = {}
 
 
@@ -83,7 +82,11 @@ class Interceptor:
             results.video_folder = video_folder
             results.video_path = video_path
 
-            execution_results.append(results)
+            if results.results:
+                report_id = mapping[host_hash]["report_id"]
+                report = generate_html_report(results, [])
+                notify_on_command_end(report_id, report, results, {})
+                execution_results.append(results)
 
             start_time = start_video_recording(video_host)
             mapping[host_hash]['start_time'] = start_time
@@ -112,10 +115,13 @@ class Interceptor:
 
             host = f"localhost:{selenium_port}"
             host_hash = hashlib.md5(host.encode('utf-8')).hexdigest()
+            report_id = notify_on_test_start(desired_capabilities)
+
             mapping[host_hash] = {
                 "host": f"localhost:{selenium_port}",
                 "container_id": container_id,
-                "video": f"localhost:{video_port}"
+                "video": f"localhost:{video_port}",
+                "report_id": report_id
             }
 
         if len(path_components) > 3:
