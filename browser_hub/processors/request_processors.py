@@ -10,7 +10,7 @@ from browser_hub.pert_agent import PerfAgent
 from browser_hub.util import is_performance_entities_changed, is_dom_changed
 
 
-def process_request(original_request, host, session_id, start_time, locators):
+def process_request(original_request, host, session_id, start_time, locators, commands):
     # host = request.host
     # port = request.port
     # session_id = request.path_components[3]

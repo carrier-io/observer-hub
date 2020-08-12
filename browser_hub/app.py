@@ -24,6 +24,7 @@ config = read_config()
 mapping = {}
 execution_results = []
 locators = {}
+commands = {}
 
 
 def container_inspector_job():
@@ -46,6 +47,7 @@ def container_inspector_job():
             print(f"Container {container_id} was deleted!")
             deleted.append(k)
             locators.pop(v['session_id'], None)
+            commands.pop(v['session_id'], None)
 
     for d in deleted:
         mapping.pop(d, None)
@@ -76,7 +78,27 @@ class Interceptor:
         host = None
         host_hash = None
 
-        headers = original_request.headers.fields
+        if original_request.method != "GET" and original_request.path != '/wd/hub/session':
+            content = json.loads(original_request.content.decode('utf-8'))
+            session_id = path_components[3][32:]
+            command = {}
+            if original_request.path.endswith("/url"):
+                command = {
+                    "command": "open",
+                    "target": content['url'],
+                }
+            if original_request.path.endswith("/click"):
+                locator = locators[session_id][path_components[5]]
+                command = {
+                    "command": "click",
+                    "target": locator,
+                }
+
+            if command:
+                if session_id in commands.keys():
+                    commands[session_id].append(command)
+                else:
+                    commands[session_id] = [command]
 
         if "element" in original_request.path and is_actionable(original_request.path):
             session_id = path_components[3]
@@ -84,7 +106,7 @@ class Interceptor:
             host = mapping[host_hash]['host']
             start_time = mapping[host_hash]['start_time']
 
-            results = process_request(original_request, host, session_id[32:], start_time, locators)
+            results = process_request(original_request, host, session_id[32:], start_time, locators, commands)
 
             video_host = mapping[host_hash]['video']
             video_folder, video_path = stop_recording(video_host)
@@ -152,7 +174,7 @@ class Interceptor:
             method=original_request.method,
             url=url,
             content=original_request.content,
-            headers=headers
+            headers=original_request.headers.fields
         )
 
         mapping[host_hash]["lastly_used"] = str(datetime.now())
