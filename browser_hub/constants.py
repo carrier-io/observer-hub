@@ -10,7 +10,9 @@ SELENIUM_PORT = int(os.environ.get("SELENIUM_PORT", 4444))
 VIDEO_PORT = int(os.environ.get("SELENIUM_PORT", 9999))
 SCREEN_RESOLUTION = os.environ.get("RESOLUTION", "1920x1080")
 CONFIG_PATH = os.environ.get("CONFIG_PATH", "/tmp/browser_hub/config.json")
-REPORT_PATH = '/tmp/reports/'
+REPORT_PATH = '/tmp/browser_hub/reports/'
+VIDEO_PATH = '/tmp/browser_hub/videos'
+SCREENSHOTS_PATH = '/tmp/browser_hub/screenshots'
 FFMPEG_PATH = os.environ.get("ffmpeg_path", "ffmpeg")
 TOKEN = os.environ.get('token', "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxNjQ5ODY1Ny04OTYyLTRiZmUtYjY2OS0yZDQyYjEyMzQ0ODQifQ.eyJqdGkiOiJhNjc4NDhjMC04MGYyLTRkM2MtYjJmMS0xZmUzMTgwZDQ0MGEiLCJleHAiOjAsIm5iZiI6MCwiaWF0IjoxNTk3MTQ0MTg5LCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjEwNy9hdXRoL3JlYWxtcy9jYXJyaWVyIiwiYXVkIjoiaHR0cDovLzE5Mi4xNjguMC4xMDcvYXV0aC9yZWFsbXMvY2FycmllciIsInN1YiI6IjhhOWEzY2VjLTVlMTMtNDJjZC04NzM2LWEwZTk3NTk4ZDg2ZSIsInR5cCI6Ik9mZmxpbmUiLCJhenAiOiJjYXJyaWVyLW9pZGMiLCJub25jZSI6IkpWdVYxU2gxWU9wbUxNNVoiLCJhdXRoX3RpbWUiOjAsInNlc3Npb25fc3RhdGUiOiI1OGE0NTQxYi01NzYwLTRkOGItOGEzOC03OTc3ZDcxODdhYzYiLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoib3BlbmlkIG9mZmxpbmVfYWNjZXNzIGVtYWlsIHByb2ZpbGUifQ.u8Bf2NDkZZ39RE3DE9YqeXJZ1ig9A_et9SlLyEmGH8A")
 

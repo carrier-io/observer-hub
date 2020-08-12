@@ -1,6 +1,8 @@
+import os
 from urllib.parse import urlparse
 from uuid import uuid4
 
+from browser_hub.constants import SCREENSHOTS_PATH
 from browser_hub.db import get_from_storage, save_to_storage
 from browser_hub.models.execution_result import ExecutionResult
 from browser_hub.processors.results_processor import compute_results_for_simple_page, compute_results_for_spa
@@ -60,7 +62,8 @@ def process_request(original_request, host, session_id, start_time, locators):
     page_identifier = None
     if results:
         current_url = perf_agent.get_current_url()
-        screenshot_path = perf_agent.take_screenshot(f"/tmp/{uuid4()}.png")
+        os.makedirs(SCREENSHOTS_PATH, exist_ok=True)
+        screenshot_path = perf_agent.take_screenshot(f"{SCREENSHOTS_PATH}/{uuid4()}.png")
         page_identifier = get_page_identifier(current_url, results['info']['title'], original_request,
                                               locators[session_id])
     return ExecutionResult(page_identifier, results, screenshot_path, results_type)
