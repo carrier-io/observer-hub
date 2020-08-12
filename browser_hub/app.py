@@ -24,6 +24,7 @@ config = read_config()
 mapping = {}
 execution_results = []
 requests = {}
+locators = {}
 
 
 def container_inspector_job():
@@ -58,7 +59,7 @@ def generate_report(args):
 
     test_name = f"{browser_name}_{version}"
 
-    process_results_for_test(report_id, test_name, execution_results, [], True)
+    process_results_for_test(report_id, test_name, execution_results, [], False)
     execution_results.clear()
 
 
@@ -83,7 +84,7 @@ class Interceptor:
             host = mapping[host_hash]['host']
             start_time = mapping[host_hash]['start_time']
 
-            results = process_request(original_request, host, session_id[32:], start_time)
+            results = process_request(original_request, host, session_id[32:], start_time, locators)
 
             video_host = mapping[host_hash]['video']
             video_folder, video_path = stop_recording(video_host)
@@ -93,6 +94,7 @@ class Interceptor:
             if results.results:
                 report_id = mapping[host_hash]["report_id"]
                 report = generate_html_report(results, [])
+
                 notify_on_command_end(report_id, report, results, {})
                 execution_results.append(results)
 
@@ -105,7 +107,7 @@ class Interceptor:
             host = mapping[host_hash]['host']
             start_time = mapping[host_hash]['start_time']
 
-            results = process_request(original_request, host, session_id[32:], start_time)
+            results = process_request(original_request, host, session_id[32:], start_time, locators)
 
             video_host = mapping[host_hash]['video']
             video_folder, video_path = stop_recording(video_host)
@@ -164,6 +166,12 @@ class Interceptor:
             video_host = mapping[host_hash]["video"]
             start_time = start_video_recording(video_host)
             mapping[host_hash]['start_time'] = start_time
+
+        if flow.request.path.endswith("element"):
+            session_id = flow.request.path_components[3]
+            content = json.loads(response.decode('utf-8'))
+            element_id = [*content['value'].values()][0]
+            locators[session_id] = {element_id: json.loads(flow.request.content.decode('utf-8'))}
 
         flow.response = http.HTTPResponse.make(
             flow.response.status_code,

@@ -8,7 +8,7 @@ from browser_hub.pert_agent import PerfAgent
 from browser_hub.util import is_performance_entities_changed, is_dom_changed
 
 
-def process_request(original_request, host, session_id, start_time):
+def process_request(original_request, host, session_id, start_time, locators):
     # host = request.host
     # port = request.port
     # session_id = request.path_components[3]
@@ -57,16 +57,21 @@ def process_request(original_request, host, session_id, start_time):
 
             results_type = "action"
 
-    screenshot_path = perf_agent.take_screenshot(f"/tmp/{uuid4()}.png")
-    page_identifier = get_page_identifier(results['info']['title'], current_command)
-    return ExecutionResult(results, screenshot_path, results_type)
+    page_identifier = None
+    if results:
+        current_url = perf_agent.get_current_url()
+        screenshot_path = perf_agent.take_screenshot(f"/tmp/{uuid4()}.png")
+        page_identifier = get_page_identifier(current_url, results['info']['title'], original_request,
+                                              locators[session_id])
+    return ExecutionResult(page_identifier, results, screenshot_path, results_type)
 
 
-def get_page_identifier(title, current_command):
-    current_url = get_current_url()
+def get_page_identifier(current_url, title, original_request, locators):
     parsed_url = urlparse(current_url)
-    comment = current_command['comment']
-    if comment:
-        title = comment
+    print("Get page identifier")
+    print(original_request.path_components)
+    command = original_request.path_components[6]
+    element_id = original_request.path_components[5]
+    locator = locators[element_id]
 
-    return f"{title}:{parsed_url.path}@{current_command['command']}({current_command['target']})"
+    return f"{title}:{parsed_url.path}@{command}({locator['using']}={locator['value']})"
