@@ -28,7 +28,10 @@ def notify_on_test_start(desired_capabilities):
     browser_name = desired_capabilities['browserName']
     version = desired_capabilities['version']
 
-    test_name = desired_capabilities.get("scenario_name", f"{browser_name}_{version}")
+    if version:
+        version = f'_{version}'
+
+    test_name = desired_capabilities.get("scenario_name", f"{browser_name}{version}")
     base_url = desired_capabilities.get('base_url', "")
     loops = desired_capabilities.get('loops', 1)
     aggregation = desired_capabilities.get('aggregation', 'max')

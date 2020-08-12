@@ -23,7 +23,6 @@ config = read_config()
 
 mapping = {}
 execution_results = []
-requests = {}
 locators = {}
 
 
@@ -46,6 +45,7 @@ def container_inspector_job():
             docker_client.get_container(container_id).remove(force=True)
             print(f"Container {container_id} was deleted!")
             deleted.append(k)
+            locators.pop(v['session_id'], None)
 
     for d in deleted:
         mapping.pop(d, None)
@@ -171,12 +171,18 @@ class Interceptor:
             video_host = mapping[host_hash]["video"]
             start_time = start_video_recording(video_host)
             mapping[host_hash]['start_time'] = start_time
+            mapping[host_hash]['session_id'] = session_id
 
         if flow.request.path.endswith("element"):
             session_id = flow.request.path_components[3]
             content = json.loads(response.decode('utf-8'))
             element_id = [*content['value'].values()][0]
-            locators[session_id] = {element_id: json.loads(flow.request.content.decode('utf-8'))}
+
+            locator = json.loads(flow.request.content.decode('utf-8'))
+            if session_id in locators.keys():
+                locators[session_id][element_id] = locator
+            else:
+                locators[session_id] = {element_id: locator}
 
         flow.response = http.HTTPResponse.make(
             flow.response.status_code,

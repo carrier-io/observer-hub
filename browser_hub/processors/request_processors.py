@@ -66,6 +66,7 @@ def process_request(original_request, host, session_id, start_time, locators):
         screenshot_path = perf_agent.take_screenshot(f"{SCREENSHOTS_PATH}/{uuid4()}.png")
         page_identifier = get_page_identifier(current_url, results['info']['title'], original_request,
                                               locators[session_id])
+
     return ExecutionResult(page_identifier, results, screenshot_path, results_type)
 
 

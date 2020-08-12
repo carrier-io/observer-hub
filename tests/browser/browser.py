@@ -11,6 +11,7 @@ class Browser(object):
         # self.driver = webdriver.Chrome(executable_path=ChromeDriverManager().install())
         options = webdriver.ChromeOptions()
         options.add_argument('--window-size=1920,1080')
+        options.set_capability("version", "83.0")
         # options = webdriver.FirefoxOptions()
         self.driver = webdriver.Remote(command_executor='http://localhost:4444/wd/hub', options=options)
         self.wait = WebDriverWait(self.driver, 10)
