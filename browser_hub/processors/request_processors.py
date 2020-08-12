@@ -70,6 +70,10 @@ def get_page_identifier(current_url, title, original_request, locators):
     parsed_url = urlparse(current_url)
     print("Get page identifier")
     print(original_request.path_components)
+
+    if original_request.method == "DELETE":
+        return f"{title}:{parsed_url.path}@close_browser()"
+
     command = original_request.path_components[6]
     element_id = original_request.path_components[5]
     locator = locators[element_id]

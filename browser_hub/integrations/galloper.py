@@ -40,7 +40,7 @@ def notify_on_test_start(desired_capabilities):
     if "loops" in desired_capabilities:
         loops = desired_capabilities['loops']
 
-    aggregation = ""
+    aggregation = "max"
     if "aggregation" in desired_capabilities:
         aggregation = desired_capabilities['aggregation']
 
@@ -125,6 +125,7 @@ def notify_on_command_end(report_id, report, execution_result, thresholds):
     data = {
         "name": name,
         "type": execution_result.results_type,
+        "identifier": execution_result.page_identifier,
         "metrics": result,
         "bucket_name": REPORTS_BUCKET,
         "file_name": report.file_name,

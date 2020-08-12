@@ -114,7 +114,12 @@ class Interceptor:
             results.video_folder = video_folder
             results.video_path = video_path
 
-            execution_results.append(results)
+            if results.results:
+                report_id = mapping[host_hash]["report_id"]
+                report = generate_html_report(results, [])
+
+                notify_on_command_end(report_id, report, results, {})
+                execution_results.append(results)
 
         if original_request.path == "/wd/hub/session":
             desired_capabilities = get_desired_capabilities(original_request)
