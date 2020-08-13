@@ -107,8 +107,10 @@ class Interceptor:
             host_hash = session_id[0:32]
             host = mapping[host_hash]['host']
             start_time = mapping[host_hash]['start_time']
+            session_id = session_id[32:]
 
-            results = process_request(original_request, host, session_id[32:], start_time, locators, commands)
+            results = process_request(original_request, host, session_id, start_time, locators,
+                                      commands[session_id][:-1])
 
             video_host = mapping[host_hash]['video']
             video_folder, video_path = stop_recording(video_host)
@@ -130,8 +132,9 @@ class Interceptor:
             host_hash = session_id[0:32]
             host = mapping[host_hash]['host']
             start_time = mapping[host_hash]['start_time']
+            session_id = session_id[32:]
 
-            results = process_request(original_request, host, session_id[32:], start_time, locators, commands)
+            results = process_request(original_request, host, session_id, start_time, locators, commands[session_id])
 
             video_host = mapping[host_hash]['video']
             video_folder, video_path = stop_recording(video_host)
