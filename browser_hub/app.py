@@ -10,7 +10,7 @@ from mitmproxy import http
 from mitmproxy import proxy, options
 from mitmproxy.tools.dump import DumpMaster
 
-from browser_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION
+from browser_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION, QUOTA
 from browser_hub.docker_client import DockerClient
 from browser_hub.integrations.galloper import notify_on_test_start, get_thresholds
 from browser_hub.processors.request_processors import process_request
@@ -85,6 +85,20 @@ class Interceptor:
         path_components = list(original_request.path_components)
         host = None
         host_hash = None
+
+        if flow.request.path == "/status" or flow.request.path == '/favicon.ico':
+            content = {
+                "quota": QUOTA,
+                "active": len(mapping.keys())
+            }
+
+            response = json.dumps(content).encode('utf-8')
+
+            flow.response = http.HTTPResponse.make(
+                200,
+                response
+            )
+            return
 
         if original_request.method != "GET" and \
                 original_request.method != "DELETE" and \
