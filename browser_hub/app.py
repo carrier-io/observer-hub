@@ -1,6 +1,8 @@
 import hashlib
 import json
+import os
 from datetime import datetime
+from shutil import rmtree
 
 import docker
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -10,10 +12,9 @@ from mitmproxy.tools.dump import DumpMaster
 
 from browser_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION
 from browser_hub.docker_client import DockerClient
-from browser_hub.integrations.galloper import notify_on_test_start, notify_on_command_end, get_thresholds
+from browser_hub.integrations.galloper import notify_on_test_start, get_thresholds
 from browser_hub.processors.request_processors import process_request
-from browser_hub.processors.results_processor import generate_html_report, \
-    process_results_for_test, process_results_for_page
+from browser_hub.processors.results_processor import process_results_for_test, process_results_for_page
 from browser_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable, logger
 from browser_hub.video import stop_recording, start_video_recording
 
@@ -22,7 +23,7 @@ scheduler = BackgroundScheduler()
 config = read_config()
 
 mapping = {}
-execution_results = []
+execution_results = {}
 locators = {}
 commands = {}
 
@@ -41,27 +42,37 @@ def container_inspector_job():
         logger.info(f"Container {container_id} was lastly used {diff} seconds ago")
 
         if diff >= TIMEOUT:
-            generate_report(v)
+            results = execution_results[v['session_id']]
+
+            generate_report(results, v)
             logger.info(f"Container {container_id} usage time exceeded timeout!")
             docker_client.get_container(container_id).remove(force=True)
             logger.info(f"Container {container_id} was deleted!")
+
             deleted.append(k)
             locators.pop(v['session_id'], None)
             commands.pop(v['session_id'], None)
+            clean_up_data(results)
 
     for d in deleted:
         mapping.pop(d, None)
 
 
-def generate_report(args):
+def generate_report(results, args):
     report_id = args['report_id']
     browser_name = args['desired_capabilities']['browserName']
     version = args['desired_capabilities']['version']
 
     test_name = f"{browser_name}_{version}"
+    process_results_for_test(report_id, test_name, results, [], False)
 
-    process_results_for_test(report_id, test_name, execution_results, [], False)
-    execution_results.clear()
+
+def clean_up_data(results):
+    logger.info("Cleaning up generated report data...")
+    for execution_result in results:
+        rmtree(execution_result.video_folder)
+        os.remove(execution_result.screenshot_path)
+        os.remove(execution_result.report.path)
 
 
 class Interceptor:
@@ -75,7 +86,6 @@ class Interceptor:
         host = None
         host_hash = None
 
-        # maybe move to response method
         if original_request.method != "GET" and \
                 original_request.method != "DELETE" and \
                 original_request.path != '/wd/hub/session':
@@ -122,7 +132,11 @@ class Interceptor:
                 thresholds = mapping[host_hash]['thresholds']
 
                 process_results_for_page(report_id, results, thresholds)
-                execution_results.append(results)
+
+                if session_id in execution_results.keys():
+                    execution_results[session_id].append(results)
+                else:
+                    execution_results[session_id] = [results]
 
             start_time = start_video_recording(video_host)
             mapping[host_hash]['start_time'] = start_time
@@ -146,7 +160,11 @@ class Interceptor:
                 thresholds = mapping[host_hash]['thresholds']
 
                 process_results_for_page(report_id, results, thresholds)
-                execution_results.append(results)
+
+                if session_id in execution_results.keys():
+                    execution_results[session_id].append(results)
+                else:
+                    execution_results[session_id] = [results]
 
         if original_request.path == "/wd/hub/session":
             desired_capabilities = get_desired_capabilities(original_request)

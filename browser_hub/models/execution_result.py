@@ -11,3 +11,4 @@ class ExecutionResult(object):
         if not commands:
             commands = []
         self.commands = commands
+        self.report = None

@@ -2,7 +2,7 @@ import copy
 
 from deepdiff import DeepDiff
 
-from browser_hub.assertions import assert_page_thresholds
+from browser_hub.assertions import assert_page_thresholds, assert_test_thresholds
 from browser_hub.integrations.galloper import notify_on_test_end, notify_on_command_end
 from browser_hub.models.collector import ResultsCollector
 from browser_hub.reporters.html_reporter import HtmlReporter, get_test_status
@@ -116,6 +116,7 @@ def process_results_for_page(report_id, execution_result, thresholds):
     threshold_results = assert_page_thresholds(execution_result, thresholds)
     report = generate_html_report(execution_result, threshold_results)
     notify_on_command_end(report_id, report, execution_result, threshold_results)
+    execution_result.report = report
 
 
 def process_results_for_test(report_id, scenario_name, scenario_results, thresholds, junit_report=False):
@@ -123,8 +124,8 @@ def process_results_for_test(report_id, scenario_name, scenario_results, thresho
     for r in scenario_results:
         result_collector.add(r.page_identifier, r)
 
-    # threshold_results = assert_test_thresholds(scenario_name, thresholds, result_collector.results)
-    threshold_results = {}
+    threshold_results = assert_test_thresholds(scenario_name, thresholds, result_collector.results)
+
     junit_report_name = None
     if junit_report:
         junit_report_name = generate_junit_report(scenario_name, threshold_results)
