@@ -1,4 +1,3 @@
-import atexit
 import hashlib
 import json
 from datetime import datetime
@@ -13,9 +12,9 @@ from browser_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VI
 from browser_hub.docker_client import DockerClient
 from browser_hub.integrations.galloper import notify_on_test_start, notify_on_command_end
 from browser_hub.processors.request_processors import process_request
-from browser_hub.processors.results_processor import process_results_for_pages, generate_html_report, \
+from browser_hub.processors.results_processor import generate_html_report, \
     process_results_for_test
-from browser_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable
+from browser_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable, logger
 from browser_hub.video import stop_recording, start_video_recording
 
 docker_client = DockerClient(docker.from_env())
@@ -29,7 +28,7 @@ commands = {}
 
 
 def container_inspector_job():
-    print(f'There are {len(mapping.keys())} containers running...')
+    logger.info(f'There are {len(mapping.keys())} containers running...')
     deleted = []
     for k, v in mapping.items():
         if 'lastly_used' not in v.keys():
@@ -39,13 +38,13 @@ def container_inspector_job():
         diff = (now - lastly_used).seconds
         container_id = v['container_id']
 
-        print(f"Container {container_id} was lastly used {diff} seconds ago")
+        logger.info(f"Container {container_id} was lastly used {diff} seconds ago")
 
         if diff >= TIMEOUT:
             generate_report(v)
-            print(f"Container {container_id} usage time exceeded timeout!")
+            logger.info(f"Container {container_id} usage time exceeded timeout!")
             docker_client.get_container(container_id).remove(force=True)
-            print(f"Container {container_id} was deleted!")
+            logger.info(f"Container {container_id} was deleted!")
             deleted.append(k)
             locators.pop(v['session_id'], None)
             commands.pop(v['session_id'], None)
@@ -55,7 +54,6 @@ def container_inspector_job():
 
 
 def generate_report(args):
-    # process_results_for_pages(execution_results, {})
     report_id = args['report_id']
     browser_name = args['desired_capabilities']['browserName']
     version = args['desired_capabilities']['version']
@@ -72,8 +70,6 @@ class Interceptor:
 
     def request(self, flow):
         original_request = flow.request
-        print(original_request.path)
-        print(original_request.content)
 
         path_components = list(original_request.path_components)
         host = None
@@ -220,7 +216,7 @@ def start_container(browser_name, version):
     container_config = get_container_configuration(browser_name, version)
     container_image = container_config['image']
 
-    print(f"Starting container {container_image} ...")
+    logger.info(f"Starting container {container_image} ...")
     container = docker_client.run(
         container_image,
         detach=True,
@@ -233,7 +229,7 @@ def start_container(browser_name, version):
     wait_for_hub("localhost", selenium_port)
     wait_for_agent("localhost", video_port)
 
-    print(f'Container has been {container.id} started')
+    logger.info(f'Container has been {container.id} started')
     return container.short_id, selenium_port, video_port
 
 
@@ -252,7 +248,7 @@ def start_proxy():
     pconf = proxy.config.ProxyConfig(opts)
     m = DumpMaster(opts)
     m.server = proxy.server.ProxyServer(pconf)
-    print('Intercepting Proxy listening on 4444')
+    logger.info('Intercepting Proxy listening on 4444')
 
     m.addons.add(Interceptor())
     try:

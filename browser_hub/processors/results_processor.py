@@ -6,6 +6,7 @@ from browser_hub.integrations.galloper import notify_on_test_end
 from browser_hub.models.collector import ResultsCollector
 from browser_hub.reporters.html_reporter import HtmlReporter
 from browser_hub.reporters.junit_reporter import generate_junit_report
+from browser_hub.util import logger
 
 
 def compute_results_for_simple_page(perf_agent):
@@ -137,7 +138,7 @@ def process_results_for_test(report_id, scenario_name, scenario_results, thresho
 
 
 def generate_html_report(execution_result, threshold_results):
-    print("=====> Reports generation")
+    logger.info("=====> Reports generation")
 
     test_status = "passed"
 

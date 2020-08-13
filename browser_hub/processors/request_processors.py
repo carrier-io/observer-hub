@@ -7,13 +7,10 @@ from browser_hub.db import get_from_storage, save_to_storage
 from browser_hub.models.execution_result import ExecutionResult
 from browser_hub.processors.results_processor import compute_results_for_simple_page, compute_results_for_spa
 from browser_hub.pert_agent import PerfAgent
-from browser_hub.util import is_performance_entities_changed, is_dom_changed
+from browser_hub.util import is_performance_entities_changed, is_dom_changed, logger
 
 
 def process_request(original_request, host, session_id, start_time, locators, commands):
-    # host = request.host
-    # port = request.port
-    # session_id = request.path_components[3]
     perf_agent = PerfAgent(host, session_id)
 
     load_event_end = perf_agent.get_performance_timing()['loadEventEnd']
@@ -72,8 +69,7 @@ def process_request(original_request, host, session_id, start_time, locators, co
 
 def get_page_identifier(current_url, title, original_request, locators):
     parsed_url = urlparse(current_url)
-    print("Get page identifier")
-    print(original_request.path_components)
+    logger.info(f"Get page identifier {original_request.path_components}")
 
     if original_request.method == "DELETE":
         return f"{title}:{parsed_url.path}@close_browser()"

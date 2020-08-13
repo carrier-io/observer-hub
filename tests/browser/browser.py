@@ -25,6 +25,9 @@ class Browser(object):
     def set_window_size(self, width, height):
         self.driver.set_window_size(width, height)
 
+    def set_window_position(self, x, y):
+        self.driver.set_window_position(x, y)
+
     def get(self, css_locator):
         return self.wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, css_locator)))
 

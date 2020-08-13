@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from browser_hub.audits import accessibility_audit, bestpractice_audit, performance_audit, privacy_audit
 from browser_hub.constants import REPORT_PATH, FFMPEG_PATH
+from browser_hub.util import logger
 
 
 class HtmlReporter(object):
@@ -47,7 +48,7 @@ class HtmlReporter(object):
                                        base64_full_page_screen=base64_encoded_string)
 
     def concut_video(self, start, end, page_name, video_path):
-        print(f"Concut video {video_path}")
+        logger.info(f"Concut video {video_path}")
         p = Pool(7)
         res = []
         try:
@@ -63,7 +64,7 @@ class HtmlReporter(object):
             res = p.map(trim_screenshot, process_params)
         except:
             from traceback import format_exc
-            print(format_exc())
+            logger.warn(format_exc())
         finally:
             p.terminate()
         return res
@@ -108,7 +109,7 @@ class HtmlReporter(object):
         report_uuid = uuid4()
         os.makedirs(REPORT_PATH, exist_ok=True)
         report_file_name = f'{REPORT_PATH}{self.title}_{report_uuid}.html'
-        print(f"Generate html report {report_file_name}")
+        logger.info(f"Generate html report {report_file_name}")
         with open(report_file_name, 'w') as f:
             f.write(self.html)
         return HtmlReport(self.title, report_uuid)
@@ -136,5 +137,5 @@ def trim_screenshot(kwargs):
             return {kwargs["ms"]: base64.b64encode(image_file.read()).decode("utf-8")}
     except FileNotFoundError:
         from traceback import format_exc
-        print(format_exc())
+        logger.warn(format_exc())
         return {}

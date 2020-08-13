@@ -5,6 +5,7 @@ from time import time
 from requests import get
 
 from browser_hub.constants import VIDEO_PATH
+from browser_hub.util import logger
 
 
 def start_video_recording(video_host):
@@ -19,12 +20,12 @@ def start_recording(host):
 
 
 def stop_recording(host):
-    print("Stop recording...")
+    logger.info("Stop recording...")
     os.makedirs(VIDEO_PATH, exist_ok=True)
     video_results = get(f'http://{host}/record/stop').content
     video_folder = tempfile.mkdtemp(dir=VIDEO_PATH)
     video_path = os.path.join(video_folder, "video.mp4")
     with open(video_path, 'w+b') as f:
         f.write(video_results)
-    print(f"Video file {video_path}")
+    logger.info(f"Video file {video_path}")
     return video_folder, video_path
