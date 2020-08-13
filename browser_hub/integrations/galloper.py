@@ -47,7 +47,7 @@ def notify_on_test_start(desired_capabilities):
 
     res = requests.post(f"{GALLOPER_URL}/api/v1/observer/{GALLOPER_PROJECT_ID}", json=data,
                         headers=get_headers())
-    return res.json()['id']
+    return res.json()['id'], test_name
 
 
 def notify_on_test_end(report_id, total_thresholds, exception, junit_report_name):

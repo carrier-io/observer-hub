@@ -2,9 +2,10 @@ import copy
 
 from deepdiff import DeepDiff
 
-from browser_hub.integrations.galloper import notify_on_test_end
+from browser_hub.assertions import assert_page_thresholds
+from browser_hub.integrations.galloper import notify_on_test_end, notify_on_command_end
 from browser_hub.models.collector import ResultsCollector
-from browser_hub.reporters.html_reporter import HtmlReporter
+from browser_hub.reporters.html_reporter import HtmlReporter, get_test_status
 from browser_hub.reporters.junit_reporter import generate_junit_report
 from browser_hub.util import logger
 
@@ -111,15 +112,10 @@ def compute_results_for_spa(old, new):
     return result
 
 
-def process_results_for_pages(scenario_results, thresholds):
-    for execution_result in scenario_results:
-        if execution_result.results is None:
-            continue
-        # threshold_results = assert_page_thresholds(execution_result, thresholds)
-
-        report = generate_html_report(execution_result, [])
-        # notify_on_command_end(report, execution_result, threshold_results)
-        # execution_result.report = report
+def process_results_for_page(report_id, execution_result, thresholds):
+    threshold_results = assert_page_thresholds(execution_result, thresholds)
+    report = generate_html_report(execution_result, threshold_results)
+    notify_on_command_end(report_id, report, execution_result, threshold_results)
 
 
 def process_results_for_test(report_id, scenario_name, scenario_results, thresholds, junit_report=False):
@@ -139,9 +135,7 @@ def process_results_for_test(report_id, scenario_name, scenario_results, thresho
 
 def generate_html_report(execution_result, threshold_results):
     logger.info("=====> Reports generation")
-
-    test_status = "passed"
-
+    test_status = get_test_status(threshold_results)
     reporter = HtmlReporter(test_status, execution_result.video_path,
                             execution_result.results,
                             execution_result.video_folder,

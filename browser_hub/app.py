@@ -10,10 +10,10 @@ from mitmproxy.tools.dump import DumpMaster
 
 from browser_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION
 from browser_hub.docker_client import DockerClient
-from browser_hub.integrations.galloper import notify_on_test_start, notify_on_command_end
+from browser_hub.integrations.galloper import notify_on_test_start, notify_on_command_end, get_thresholds
 from browser_hub.processors.request_processors import process_request
 from browser_hub.processors.results_processor import generate_html_report, \
-    process_results_for_test
+    process_results_for_test, process_results_for_page
 from browser_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable, logger
 from browser_hub.video import stop_recording, start_video_recording
 
@@ -75,7 +75,10 @@ class Interceptor:
         host = None
         host_hash = None
 
-        if original_request.method != "GET" and original_request.path != '/wd/hub/session':
+        # maybe move to response method
+        if original_request.method != "GET" and \
+                original_request.method != "DELETE" and \
+                original_request.path != '/wd/hub/session':
             content = json.loads(original_request.content.decode('utf-8'))
             session_id = path_components[3][32:]
             command = {}
@@ -114,9 +117,9 @@ class Interceptor:
 
             if results.results:
                 report_id = mapping[host_hash]["report_id"]
-                report = generate_html_report(results, [])
+                thresholds = mapping[host_hash]['thresholds']
 
-                notify_on_command_end(report_id, report, results, {})
+                process_results_for_page(report_id, results, thresholds)
                 execution_results.append(results)
 
             start_time = start_video_recording(video_host)
@@ -128,7 +131,7 @@ class Interceptor:
             host = mapping[host_hash]['host']
             start_time = mapping[host_hash]['start_time']
 
-            results = process_request(original_request, host, session_id[32:], start_time, locators)
+            results = process_request(original_request, host, session_id[32:], start_time, locators, commands)
 
             video_host = mapping[host_hash]['video']
             video_folder, video_path = stop_recording(video_host)
@@ -137,9 +140,9 @@ class Interceptor:
 
             if results.results:
                 report_id = mapping[host_hash]["report_id"]
-                report = generate_html_report(results, [])
+                thresholds = mapping[host_hash]['thresholds']
 
-                notify_on_command_end(report_id, report, results, {})
+                process_results_for_page(report_id, results, thresholds)
                 execution_results.append(results)
 
         if original_request.path == "/wd/hub/session":
@@ -151,14 +154,16 @@ class Interceptor:
 
             host = f"localhost:{selenium_port}"
             host_hash = hashlib.md5(host.encode('utf-8')).hexdigest()
-            report_id = notify_on_test_start(desired_capabilities)
+            report_id, test_name = notify_on_test_start(desired_capabilities)
+            thresholds = get_thresholds(test_name)
 
             mapping[host_hash] = {
                 "host": f"localhost:{selenium_port}",
                 "container_id": container_id,
                 "video": f"localhost:{video_port}",
                 "report_id": report_id,
-                "desired_capabilities": desired_capabilities
+                "desired_capabilities": desired_capabilities,
+                "thresholds": thresholds
             }
 
         if len(path_components) > 3:

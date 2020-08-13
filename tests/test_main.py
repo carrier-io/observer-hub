@@ -14,3 +14,5 @@ def test_web_mail():
 
     browser.get("li.e-level-1[data-uid='SF10202']").click()
     assert browser.get("#sub").text == 'Oscar Mcconnell'
+
+    browser.close()

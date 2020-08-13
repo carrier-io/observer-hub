@@ -139,3 +139,10 @@ def trim_screenshot(kwargs):
         from traceback import format_exc
         logger.warn(format_exc())
         return {}
+
+
+def get_test_status(threshold_results):
+    if threshold_results['failed'] > 0:
+        return "failed"
+
+    return "passed"

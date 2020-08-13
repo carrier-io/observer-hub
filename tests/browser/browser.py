@@ -33,3 +33,6 @@ class Browser(object):
 
     def session_id(self):
         return self.driver.session_id
+
+    def close(self):
+        self.driver.quit()
