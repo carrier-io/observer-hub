@@ -125,7 +125,7 @@ def notify_on_command_end(report_id, report, execution_result, thresholds):
         "browser_version": metrics['info']['browser'],
         "thresholds_total": thresholds.get("total", 0),
         "thresholds_failed": thresholds.get("failed", 0),
-        "locators": execution_result.locators
+        "locators": execution_result.commands
     }
 
     res = requests.post(f"{GALLOPER_URL}/api/v1/observer/{GALLOPER_PROJECT_ID}/{report_id}", json=data,

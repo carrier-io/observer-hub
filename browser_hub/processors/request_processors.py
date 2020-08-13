@@ -67,7 +67,7 @@ def process_request(original_request, host, session_id, start_time, locators, co
         page_identifier = get_page_identifier(current_url, results['info']['title'], original_request,
                                               locators[session_id])
 
-    return ExecutionResult(page_identifier, results, screenshot_path, results_type)
+    return ExecutionResult(page_identifier, results, screenshot_path, results_type, commands[session_id])
 
 
 def get_page_identifier(current_url, title, original_request, locators):

@@ -1,3 +1,4 @@
+import atexit
 import hashlib
 import json
 from datetime import datetime
@@ -86,12 +87,14 @@ class Interceptor:
                 command = {
                     "command": "open",
                     "target": content['url'],
+                    "value": ""
                 }
             if original_request.path.endswith("/click"):
                 locator = locators[session_id][path_components[5]]
                 command = {
                     "command": "click",
-                    "target": locator,
+                    "target": locator['value'],
+                    "value": ""
                 }
 
             if command:
