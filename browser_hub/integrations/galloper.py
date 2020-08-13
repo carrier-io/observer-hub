@@ -1,13 +1,12 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytz
 import requests
 
 from browser_hub.constants import GALLOPER_URL, GALLOPER_PROJECT_ID, TESTS_BUCKET, TOKEN, ENV, RESULTS_BUCKET, \
-    REPORTS_BUCKET, REPORT_PATH, TZ
-from browser_hub.db import save_to_storage, get_from_storage
+    REPORTS_BUCKET, REPORT_PATH, TZ, TIMEOUT
 from browser_hub.models.exporters import GalloperExporter
 from browser_hub.util import logger
 
@@ -54,9 +53,11 @@ def notify_on_test_start(desired_capabilities):
 def notify_on_test_end(report_id, total_thresholds, exception, junit_report_name):
     logger.info(f"About to notify on test end for report {report_id}")
 
+    time = datetime.now(tz=pytz.timezone(TZ)) - timedelta(seconds=TIMEOUT)
+
     data = {
         "report_id": report_id,
-        "time": datetime.now(tz=pytz.timezone(TZ)).strftime('%Y-%m-%d %H:%M:%S'),
+        "time": time.strftime('%Y-%m-%d %H:%M:%S'),
         "thresholds_total": total_thresholds.get("total", 0),
         "thresholds_failed": total_thresholds.get("failed", 0)
     }
