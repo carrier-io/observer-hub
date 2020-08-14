@@ -19,7 +19,7 @@ with open('requirements.txt') as f:
     required = f.read().splitlines()
 
 setup(
-    name='Observer browser hub',
+    name='observer hub',
     version='1.0.0',
     description='Core component',
     long_description='Client for standalone selenium container for video recording',
