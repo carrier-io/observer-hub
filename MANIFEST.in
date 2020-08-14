@@ -1,0 +1,2 @@
+graft observer_hub/templates
+global-exclude *.pyc
