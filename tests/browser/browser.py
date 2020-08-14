@@ -1,11 +1,8 @@
 import time
 
 from selenium import webdriver
-from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
 
 
 class Browser(object):
@@ -60,7 +57,7 @@ class Element(object):
             except Exception as reason:
                 if time.time() > finish_time:
                     raise TimeoutError(reason)
-                # time.sleep(0.4)
+                time.sleep(0.4)
 
     def click(self):
         self._find().click()

@@ -70,7 +70,7 @@ def generate_report(results, args):
 def clean_up_data(results):
     logger.info("Cleaning up generated report data...")
     for execution_result in results:
-        rmtree(execution_result.video_folder)
+        rmtree(execution_result.video_folder, ignore_errors=True)
         os.remove(execution_result.screenshot_path)
         os.remove(execution_result.report.path)
 
