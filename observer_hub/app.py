@@ -41,7 +41,7 @@ def container_inspector_job():
 
         logger.info(f"Container {container_id} was lastly used {diff} seconds ago")
 
-        if diff >= TIMEOUT:
+        if diff >= TIMEOUT and v['session_id'] in execution_results.keys():
             results = execution_results[v['session_id']]
 
             generate_report(results, v)

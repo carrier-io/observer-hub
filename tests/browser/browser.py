@@ -1,4 +1,7 @@
+import time
+
 from selenium import webdriver
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
@@ -29,10 +32,39 @@ class Browser(object):
         self.driver.set_window_position(x, y)
 
     def get(self, css_locator):
-        return self.wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, css_locator)))
+        # return self.wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, css_locator)))
+        return Element(self.driver, css_locator)
 
     def session_id(self):
         return self.driver.session_id
 
     def close(self):
         self.driver.quit()
+
+
+class Element(object):
+
+    def __init__(self, driver, locator):
+        self.driver = driver
+        self.locator = locator
+
+    def _find(self):
+        finish_time = time.time() + 4
+        while True:
+            try:
+                element = self.driver.find_element(by=By.CSS_SELECTOR, value=self.locator)
+                if element.is_displayed():
+                    return element
+                else:
+                    raise Exception()
+            except Exception as reason:
+                if time.time() > finish_time:
+                    raise TimeoutError(reason)
+                # time.sleep(0.4)
+
+    def click(self):
+        self._find().click()
+
+    @property
+    def text(self):
+        return self._find().text
