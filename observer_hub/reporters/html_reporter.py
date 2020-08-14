@@ -75,7 +75,7 @@ class HtmlReporter(object):
                       base64_full_page_screen):
         from jinja2 import Environment, PackageLoader, select_autoescape
         env = Environment(
-            loader=PackageLoader('browser_hub', 'templates'),
+            loader=PackageLoader('observer_hub', 'templates'),
             autoescape=select_autoescape(['html', 'xml'])
         )
 

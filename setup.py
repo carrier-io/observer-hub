@@ -33,7 +33,7 @@ setup(
     zip_safe=False,
     entry_points={
         'console_scripts': [
-            'app=browser_hub.app:main'
+            'app=observer_hub.app:main'
         ]
     },
 )

@@ -7,7 +7,7 @@ import requests
 
 from observer_hub.constants import CONFIG_PATH
 
-logger = logging.getLogger('Browser hub')
+logger = logging.getLogger('Observer hub')
 
 handler = logging.StreamHandler()
 formatter = logging.Formatter('[%(name)s] - %(message)s')

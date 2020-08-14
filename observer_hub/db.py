@@ -1,6 +1,6 @@
 import shelve
 
-DB_NAME = 'tmp/observer.db'
+DB_NAME = '/tmp/observer.db'
 
 
 def save_to_storage(key, value):
