@@ -5,9 +5,9 @@ from multiprocessing import Pool
 from subprocess import PIPE, Popen
 from uuid import uuid4
 
-from browser_hub.audits import accessibility_audit, bestpractice_audit, performance_audit, privacy_audit
-from browser_hub.constants import REPORT_PATH, FFMPEG_PATH
-from browser_hub.util import logger
+from observer_hub.audits import accessibility_audit, bestpractice_audit, performance_audit, privacy_audit
+from observer_hub.constants import REPORT_PATH, FFMPEG_PATH
+from observer_hub.util import logger
 
 
 class HtmlReporter(object):

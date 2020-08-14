@@ -2,12 +2,12 @@ import copy
 
 from deepdiff import DeepDiff
 
-from browser_hub.assertions import assert_page_thresholds, assert_test_thresholds
-from browser_hub.integrations.galloper import notify_on_test_end, notify_on_command_end
-from browser_hub.models.collector import ResultsCollector
-from browser_hub.reporters.html_reporter import HtmlReporter, get_test_status
-from browser_hub.reporters.junit_reporter import generate_junit_report
-from browser_hub.util import logger
+from observer_hub.assertions import assert_page_thresholds, assert_test_thresholds
+from observer_hub.integrations.galloper import notify_on_test_end, notify_on_command_end
+from observer_hub.models.collector import ResultsCollector
+from observer_hub.reporters.html_reporter import HtmlReporter, get_test_status
+from observer_hub.reporters.junit_reporter import generate_junit_report
+from observer_hub.util import logger
 
 
 def compute_results_for_simple_page(perf_agent):

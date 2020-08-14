@@ -5,10 +5,10 @@ from pathlib import Path
 import pytz
 import requests
 
-from browser_hub.constants import GALLOPER_URL, GALLOPER_PROJECT_ID, TESTS_BUCKET, TOKEN, ENV, RESULTS_BUCKET, \
+from observer_hub.constants import GALLOPER_URL, GALLOPER_PROJECT_ID, TESTS_BUCKET, TOKEN, ENV, RESULTS_BUCKET, \
     REPORTS_BUCKET, REPORT_PATH, TZ, TIMEOUT
-from browser_hub.models.exporters import GalloperExporter
-from browser_hub.util import logger
+from observer_hub.models.exporters import GalloperExporter
+from observer_hub.util import logger
 
 
 def get_thresholds(test_name):

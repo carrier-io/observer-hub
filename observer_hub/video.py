@@ -4,8 +4,8 @@ from time import time
 
 from requests import get
 
-from browser_hub.constants import VIDEO_PATH
-from browser_hub.util import logger
+from observer_hub.constants import VIDEO_PATH
+from observer_hub.util import logger
 
 
 def start_video_recording(video_host):

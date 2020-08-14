@@ -2,7 +2,7 @@ import base64
 
 import requests
 
-from browser_hub.constants import check_ui_performance
+from observer_hub.constants import check_ui_performance
 
 
 class PerfAgent(object):

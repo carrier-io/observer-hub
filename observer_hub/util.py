@@ -5,7 +5,7 @@ from time import sleep
 from deepdiff import DeepDiff
 import requests
 
-from browser_hub.constants import CONFIG_PATH
+from observer_hub.constants import CONFIG_PATH
 
 logger = logging.getLogger('Browser hub')
 

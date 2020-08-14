@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 
 from influxdb import InfluxDBClient
 
-from browser_hub.constants import EXPORTERS_PATH
+from observer_hub.constants import EXPORTERS_PATH
 import uuid
 
 

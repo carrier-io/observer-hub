@@ -1,6 +1,6 @@
-from browser_hub.models.exporters import JsonExporter
-from browser_hub.models.thresholds import AggregatedThreshold, Threshold
-from browser_hub.util import logger, filter_thresholds_for
+from observer_hub.models.exporters import JsonExporter
+from observer_hub.models.thresholds import AggregatedThreshold, Threshold
+from observer_hub.util import logger, filter_thresholds_for
 
 
 def assert_test_thresholds(test_name, all_scope_thresholds, execution_results):

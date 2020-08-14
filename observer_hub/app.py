@@ -10,13 +10,13 @@ from mitmproxy import http
 from mitmproxy import proxy, options
 from mitmproxy.tools.dump import DumpMaster
 
-from browser_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION, QUOTA
-from browser_hub.docker_client import DockerClient
-from browser_hub.integrations.galloper import notify_on_test_start, get_thresholds
-from browser_hub.processors.request_processors import process_request
-from browser_hub.processors.results_processor import process_results_for_test, process_results_for_page
-from browser_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable, logger
-from browser_hub.video import stop_recording, start_video_recording
+from observer_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION, QUOTA
+from observer_hub.docker_client import DockerClient
+from observer_hub.integrations.galloper import notify_on_test_start, get_thresholds
+from observer_hub.processors.request_processors import process_request
+from observer_hub.processors.results_processor import process_results_for_test, process_results_for_page
+from observer_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable, logger
+from observer_hub.video import stop_recording, start_video_recording
 
 docker_client = DockerClient(docker.from_env())
 scheduler = BackgroundScheduler()

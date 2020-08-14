@@ -1,7 +1,7 @@
 from junit_xml import TestCase, TestSuite
 
-from browser_hub.constants import RESULTS_REPORT_NAME
-from browser_hub.util import logger
+from observer_hub.constants import RESULTS_REPORT_NAME
+from observer_hub.util import logger
 
 
 def generate_junit_report(test_name, total_thresholds):

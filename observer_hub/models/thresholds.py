@@ -1,4 +1,4 @@
-from browser_hub.util import logger, is_values_match, get_aggregated_value, closest, flatten_list
+from observer_hub.util import logger, is_values_match, get_aggregated_value, closest, flatten_list
 
 
 class Threshold(object):
