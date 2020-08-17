@@ -1,6 +1,9 @@
+import hashlib
 import json
 import logging
 import math
+import os
+from shutil import rmtree
 from time import sleep
 from deepdiff import DeepDiff
 import requests
@@ -111,3 +114,36 @@ def flatten_list(l):
 
 def closest(lst, val):
     return lst[min(range(len(lst)), key=lambda i: abs(lst[i] - val))]
+
+
+def clean_up_data(results):
+    logger.info("Cleaning up generated report data...")
+    for execution_result in results:
+        rmtree(execution_result.video_folder, ignore_errors=True)
+        os.remove(execution_result.screenshot_path)
+        os.remove(execution_result.report.path)
+
+
+def request_to_command(original_request, locators):
+    content = json.loads(original_request.content.decode('utf-8'))
+    session_id = original_request.path_components[3][32:]
+    command = {}
+    if original_request.path.endswith("/url"):
+        command = {
+            "command": "open",
+            "target": content['url'],
+            "value": ""
+        }
+    if original_request.path.endswith("/click"):
+        locator = locators[session_id][original_request.path_components[5]]
+        command = {
+            "command": "click",
+            "target": locator['value'],
+            "value": ""
+        }
+
+    return session_id, command
+
+
+def get_hash(data):
+    return hashlib.md5(data.encode('utf-8')).hexdigest()
