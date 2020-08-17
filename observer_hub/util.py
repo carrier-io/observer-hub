@@ -120,8 +120,15 @@ def clean_up_data(results):
     logger.info("Cleaning up generated report data...")
     for execution_result in results:
         rmtree(execution_result.video_folder, ignore_errors=True)
-        os.remove(execution_result.screenshot_path)
-        os.remove(execution_result.report.path)
+        __remove_file(execution_result.screenshot_path)
+        __remove_file(execution_result.report.path)
+
+
+def __remove_file(path):
+    try:
+        os.remove(path)
+    except FileNotFoundError:
+        pass
 
 
 def request_to_command(original_request, locators):

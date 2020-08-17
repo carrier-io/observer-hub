@@ -17,7 +17,10 @@ Create config.json file
         "default": "83.0",
         "versions":{
             "83.0":{
-                "image": "getcarrier/observer-chrome:latest"
+                "image": "getcarrier/observer-chrome:latest",
+                "env": {
+                    "VNC_NO_PASSWORD": 1
+                }
             }
         }
     }

@@ -1,4 +1,3 @@
-import hashlib
 import json
 from datetime import datetime
 
@@ -8,7 +7,8 @@ from mitmproxy import http
 from mitmproxy import proxy, options
 from mitmproxy.tools.dump import DumpMaster
 
-from observer_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION, QUOTA
+from observer_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION, QUOTA, \
+    VNC_PORT
 from observer_hub.docker_client import DockerClient
 from observer_hub.integrations.galloper import notify_on_test_start, get_thresholds
 from observer_hub.models.collector import CommandsCollector, LocatorsCollector, ExecutionResultsCollector
@@ -74,7 +74,9 @@ class Interceptor:
     def process(self, original_request, commands_full=False):
         session_id = original_request.path_components[3]
         host_hash = session_id[0:32]
-        host = mapping[host_hash]['host']
+        host_info = mapping[host_hash]
+
+        host = host_info['host']
         start_time = mapping[host_hash]['start_time']
         session_id = session_id[32:]
 
@@ -85,14 +87,14 @@ class Interceptor:
         results = process_request(original_request, host, session_id, start_time, locators[session_id],
                                   session_commands)
 
-        video_host = mapping[host_hash]['video']
+        video_host = host_info['video']
         video_folder, video_path = stop_recording(video_host)
         results.video_folder = video_folder
         results.video_path = video_path
 
         if results.results:
-            report_id = mapping[host_hash]["report_id"]
-            thresholds = mapping[host_hash]['thresholds']
+            report_id = host_info["report_id"]
+            thresholds = host_info['thresholds']
             process_results_for_page(report_id, results, thresholds)
             execution_results.add(session_id, results)
 
@@ -129,15 +131,17 @@ class Interceptor:
             start_time = start_video_recording(video_host)
             mapping[host_hash]['start_time'] = start_time
 
-        if "/wd/hub/session" in original_request.path and original_request.method == "DELETE":
+        if "/wd/hub/session" in original_request.path and original_request.method == "DELETE" \
+                and len(original_request.path_components) == 4:
             self.process(original_request, commands_full=True)
 
         if original_request.path == "/wd/hub/session":
             desired_capabilities = get_desired_capabilities(original_request)
             browser_name = desired_capabilities['browserName']
-            version = desired_capabilities['version']
+            version = desired_capabilities.get('version', '')
+            vnc = bool(desired_capabilities.get('vnc', False))
 
-            container_id, selenium_port, video_port = start_container(browser_name, version)
+            container_id, selenium_port, video_port = start_container(browser_name, version, vnc)
 
             host = f"localhost:{selenium_port}"
             host_hash = get_hash(host)
@@ -201,16 +205,25 @@ class Interceptor:
         )
 
 
-def start_container(browser_name, version):
+def start_container(browser_name, version, vnc):
     container_config = get_container_configuration(browser_name, version)
     container_image = container_config['image']
+    env_vars = container_config.get('env', {})
+
+    env = [f"RESOLUTION={SCREEN_RESOLUTION}"]
+    for k, v in env_vars.items():
+        env.append(f"{k}={v}")
+
+    ports = {f"{SELENIUM_PORT}": None, f"{VIDEO_PORT}": None}
+    if vnc:
+        ports[VNC_PORT] = None
 
     logger.info(f"Starting container {container_image} ...")
     container = docker_client.run(
         container_image,
         detach=True,
-        ports={f"{SELENIUM_PORT}": None, f"{VIDEO_PORT}": None},
-        environment=[f"RESOLUTION={SCREEN_RESOLUTION}"],
+        ports=ports,
+        environment=env,
         privileged=True
     )
     selenium_port = docker_client.port(container.short_id, SELENIUM_PORT)
