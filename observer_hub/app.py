@@ -74,7 +74,9 @@ class Interceptor:
     def process(self, original_request, commands_full=False):
         session_id = original_request.path_components[3]
         host_hash = session_id[0:32]
-        host = mapping[host_hash]['host']
+        host_info = mapping[host_hash]
+
+        host = host_info['host']
         start_time = mapping[host_hash]['start_time']
         session_id = session_id[32:]
 
@@ -85,14 +87,14 @@ class Interceptor:
         results = process_request(original_request, host, session_id, start_time, locators[session_id],
                                   session_commands)
 
-        video_host = mapping[host_hash]['video']
+        video_host = host_info['video']
         video_folder, video_path = stop_recording(video_host)
         results.video_folder = video_folder
         results.video_path = video_path
 
         if results.results:
-            report_id = mapping[host_hash]["report_id"]
-            thresholds = mapping[host_hash]['thresholds']
+            report_id = host_info["report_id"]
+            thresholds = host_info['thresholds']
             process_results_for_page(report_id, results, thresholds)
             execution_results.add(session_id, results)
 
