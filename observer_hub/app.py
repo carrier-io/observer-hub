@@ -1,8 +1,6 @@
 import hashlib
 import json
-import os
 from datetime import datetime
-from shutil import rmtree
 
 import docker
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -13,9 +11,11 @@ from mitmproxy.tools.dump import DumpMaster
 from observer_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION, QUOTA
 from observer_hub.docker_client import DockerClient
 from observer_hub.integrations.galloper import notify_on_test_start, get_thresholds
+from observer_hub.models.collector import CommandsCollector, LocatorsCollector, ExecutionResultsCollector
 from observer_hub.processors.request_processors import process_request
-from observer_hub.processors.results_processor import process_results_for_test, process_results_for_page
-from observer_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable, logger
+from observer_hub.processors.results_processor import process_results_for_page, process_results_for_test
+from observer_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable, \
+    logger, clean_up_data, request_to_command, get_hash
 from observer_hub.video import stop_recording, start_video_recording
 
 docker_client = DockerClient(docker.from_env())
@@ -23,9 +23,9 @@ scheduler = BackgroundScheduler()
 config = read_config()
 
 mapping = {}
-execution_results = {}
-locators = {}
-commands = {}
+execution_results = ExecutionResultsCollector()
+locators = LocatorsCollector()
+commands = CommandsCollector()
 
 
 def container_inspector_job():
@@ -50,8 +50,8 @@ def container_inspector_job():
             logger.info(f"Container {container_id} was deleted!")
 
             deleted.append(k)
-            locators.pop(v['session_id'], None)
-            commands.pop(v['session_id'], None)
+            locators.pop(v['session_id'])
+            commands.pop(v['session_id'])
             clean_up_data(results)
 
     for d in deleted:
@@ -67,17 +67,36 @@ def generate_report(results, args):
     process_results_for_test(report_id, test_name, results, [], False)
 
 
-def clean_up_data(results):
-    logger.info("Cleaning up generated report data...")
-    for execution_result in results:
-        rmtree(execution_result.video_folder, ignore_errors=True)
-        os.remove(execution_result.screenshot_path)
-        os.remove(execution_result.report.path)
-
-
 class Interceptor:
     def __init__(self):
         pass
+
+    def process(self, original_request, commands_full=False):
+        session_id = original_request.path_components[3]
+        host_hash = session_id[0:32]
+        host = mapping[host_hash]['host']
+        start_time = mapping[host_hash]['start_time']
+        session_id = session_id[32:]
+
+        session_commands = commands[session_id][:-1]
+        if commands_full:
+            session_commands = commands[session_id]
+
+        results = process_request(original_request, host, session_id, start_time, locators[session_id],
+                                  session_commands)
+
+        video_host = mapping[host_hash]['video']
+        video_folder, video_path = stop_recording(video_host)
+        results.video_folder = video_folder
+        results.video_path = video_path
+
+        if results.results:
+            report_id = mapping[host_hash]["report_id"]
+            thresholds = mapping[host_hash]['thresholds']
+            process_results_for_page(report_id, results, thresholds)
+            execution_results.add(session_id, results)
+
+        return host_hash, video_host
 
     def request(self, flow):
         original_request = flow.request
@@ -87,13 +106,8 @@ class Interceptor:
         host_hash = None
 
         if flow.request.path == "/status" or flow.request.path == '/favicon.ico':
-            content = {
-                "quota": QUOTA,
-                "active": len(mapping.keys())
-            }
-
+            content = {"quota": QUOTA, "active": len(mapping.keys())}
             response = json.dumps(content).encode('utf-8')
-
             flow.response = http.HTTPResponse.make(
                 200,
                 response
@@ -103,82 +117,20 @@ class Interceptor:
         if original_request.method != "GET" and \
                 original_request.method != "DELETE" and \
                 original_request.path != '/wd/hub/session':
-            content = json.loads(original_request.content.decode('utf-8'))
-            session_id = path_components[3][32:]
-            command = {}
-            if original_request.path.endswith("/url"):
-                command = {
-                    "command": "open",
-                    "target": content['url'],
-                    "value": ""
-                }
-            if original_request.path.endswith("/click"):
-                locator = locators[session_id][path_components[5]]
-                command = {
-                    "command": "click",
-                    "target": locator['value'],
-                    "value": ""
-                }
+
+            session_id, command = request_to_command(original_request, locators)
 
             if command:
-                if session_id in commands.keys():
-                    commands[session_id].append(command)
-                else:
-                    commands[session_id] = [command]
+                commands.add(session_id, command)
 
         if "element" in original_request.path and is_actionable(original_request.path):
-            session_id = path_components[3]
-            host_hash = session_id[0:32]
-            host = mapping[host_hash]['host']
-            start_time = mapping[host_hash]['start_time']
-            session_id = session_id[32:]
-
-            results = process_request(original_request, host, session_id, start_time, locators,
-                                      commands[session_id][:-1])
-
-            video_host = mapping[host_hash]['video']
-            video_folder, video_path = stop_recording(video_host)
-            results.video_folder = video_folder
-            results.video_path = video_path
-
-            if results.results:
-                report_id = mapping[host_hash]["report_id"]
-                thresholds = mapping[host_hash]['thresholds']
-
-                process_results_for_page(report_id, results, thresholds)
-
-                if session_id in execution_results.keys():
-                    execution_results[session_id].append(results)
-                else:
-                    execution_results[session_id] = [results]
+            host_hash, video_host = self.process(original_request)
 
             start_time = start_video_recording(video_host)
             mapping[host_hash]['start_time'] = start_time
 
         if "/wd/hub/session" in original_request.path and original_request.method == "DELETE":
-            session_id = path_components[3]
-            host_hash = session_id[0:32]
-            host = mapping[host_hash]['host']
-            start_time = mapping[host_hash]['start_time']
-            session_id = session_id[32:]
-
-            results = process_request(original_request, host, session_id, start_time, locators, commands[session_id])
-
-            video_host = mapping[host_hash]['video']
-            video_folder, video_path = stop_recording(video_host)
-            results.video_folder = video_folder
-            results.video_path = video_path
-
-            if results.results:
-                report_id = mapping[host_hash]["report_id"]
-                thresholds = mapping[host_hash]['thresholds']
-
-                process_results_for_page(report_id, results, thresholds)
-
-                if session_id in execution_results.keys():
-                    execution_results[session_id].append(results)
-                else:
-                    execution_results[session_id] = [results]
+            self.process(original_request, commands_full=True)
 
         if original_request.path == "/wd/hub/session":
             desired_capabilities = get_desired_capabilities(original_request)
@@ -188,7 +140,7 @@ class Interceptor:
             container_id, selenium_port, video_port = start_container(browser_name, version)
 
             host = f"localhost:{selenium_port}"
-            host_hash = hashlib.md5(host.encode('utf-8')).hexdigest()
+            host_hash = get_hash(host)
             report_id, test_name = notify_on_test_start(desired_capabilities)
             thresholds = get_thresholds(test_name)
 
@@ -222,9 +174,9 @@ class Interceptor:
         response = flow.response.content
 
         if flow.request.path == "/wd/hub/session":
-            host_hash = hashlib.md5(f"localhost:{flow.request.port}".encode('utf-8')).hexdigest()
-            content = json.loads(response.decode('utf-8'))
+            host_hash = get_hash(f"localhost:{flow.request.port}")
 
+            content = json.loads(response.decode('utf-8'))
             session_id = content['value']['sessionId']
             content['value']['sessionId'] = host_hash + session_id
             response = json.dumps(content).encode('utf-8')
@@ -240,10 +192,7 @@ class Interceptor:
             element_id = [*content['value'].values()][0]
 
             locator = json.loads(flow.request.content.decode('utf-8'))
-            if session_id in locators.keys():
-                locators[session_id][element_id] = locator
-            else:
-                locators[session_id] = {element_id: locator}
+            locators.save(session_id, element_id, locator)
 
         flow.response = http.HTTPResponse.make(
             flow.response.status_code,

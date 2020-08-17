@@ -124,7 +124,7 @@ def process_results_for_test(report_id, scenario_name, scenario_results, thresho
     for r in scenario_results:
         result_collector.add(r.page_identifier, r)
 
-    threshold_results = assert_test_thresholds(scenario_name, thresholds, result_collector.results)
+    threshold_results = assert_test_thresholds(scenario_name, thresholds, result_collector.data)
 
     junit_report_name = None
     if junit_report:
