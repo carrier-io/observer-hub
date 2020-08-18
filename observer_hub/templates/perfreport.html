@@ -15,7 +15,7 @@
   <style>
   {% raw %}
 
-    .frameImg:hover{
+    .frameImg:hover {
       cursor: pointer;
     }
 
@@ -70,8 +70,8 @@
 
     .close {
       position: absolute;
-      top: 15px;
-      right: 35px;
+      top: -52px;
+      right: 0;
       color: #f1f1f1;
       font-size: 40px;
       font-weight: bold;
@@ -85,47 +85,56 @@
       cursor: pointer;
     }
 
-    img.modal-content.w-60 {
-      width: 60%;
+    #newModalImg {
+      max-width: 100%;
     }
 
-    .slider__control {
-      position: fixed;
-      top: 50%;
-      align-items: center;
-      justify-content: center;
-      width: 38px;
-      color: #fff;
-      text-align: center;
-      opacity: 0.5;
-      height: 50px;
-      transform: translateY(-50%);
-      background: rgba(0, 0, 0, .5);
-      border: 0px;
+    .slick-prev:before, .slick-next:before {
+      color: gray;
     }
 
-    .next-slide {
-      left: 18%
+    .slideshow-container {
+      max-width: 90%;
+      position: relative;
+      margin: auto;
     }
 
-    .prev-slide {
-      right: 18%
-    }
-
-    .slider__control:hover,
-    .slider__control:focus {
-      color: #fff;
-      text-decoration: none;
-      outline: 0;
-      opacity: .9;
+    .prev, .next {
+      z-index: 100;
       cursor: pointer;
+      position: absolute;
+      bottom: -1px;
+      width: auto;
+      margin-top: -22px;
+      margin-left: 30%;
+      margin-right: 30%;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+      transition: 0.6s ease;
+      user-select: none;
+      background-color: rgba(0,0,0,0.8);
     }
 
-    @media only screen and (max-width: 700px){
-      .modal-content {
-        width: 100%;
-      }
+    .next {
+      right: 0;
     }
+
+    #newCaption {
+      text-align: center;
+    }
+
+    .mySlides img {
+      -webkit-transition: opacity .5s ease-in-out;
+      -moz-transition: opacity .5s ease-in-out;
+      -o-transition: opacity .5s ease-in-out;
+      transition: opacity .5s ease-in-out;
+    }
+
+    .mySlides img.transparent {
+      opacity:0;
+    }
+
   {% endraw %}
   </style>
 
@@ -461,18 +470,30 @@
           <img id="frame_10" class="frameImg" src="data:image/png;base64,{{ full_page_screen }}" style="width: 100%; border: 1px solid #e4dfdf;" alt="Full page screenshot">
         {% endif %}
       </div>
-
     </div>
   </div>
-  <div id="img-modal" class="modal">
-     <div class="modal_wrapper">
-        <span class="close" id="close-modal">&times;</span>
-        <img class="modal-content" id="modalImg">
-        <div id="caption"></div>
-     </div>
+
+<div class="modal" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="wrap-modal-slider">
+          <div class="slideshow-container">
+            <span class="close" id="close-modal">&times;</span>
+            <div class="mySlides">
+              <button  id='prevSlide' class="prev" aria-label="Previous" type="button">&#10094;</button>
+              <img id="newModalImg" src="" alt="">
+              <div id="newCaption"></div>
+              <button id='nextSlide' class="next" aria-label="Next" type="button">&#10095;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
+</div>
 <!--<script type="text/javascript" src="../../static/js/donut.min.js"></script>-->
 <script type="text/javascript">
 "use strict";!function(){function N(e,t){for(var a=document.createElementNS("http://www.w3.org/2000/svg",e),r=Object.keys(t),s=0,n=r.length;s<n;s++)a.setAttribute(r[s],t[r[s]]);return a;}window.createDonut=function(e,t){var a=parseInt(1e7*Math.random()),r=t.percent,s=void 0===r?0:r,n=t.stroke,i=void 0===n?5:n,o=t.colorName,d=void 0===o?"green":o,c=e.clientWidth,l=e.clientHeight,h=Math.min(c,l)/2,p=h-i/2,v=h,m=h,y=parseInt(h*Math.PI*2),x=s*y/100;if(window.CSS&&CSS.supports("color","var(--fake-var)")){var f=e.style;f.setProperty("--end-dash",x),f.setProperty("--max-dash",y)}var u=N("svg",{class:"svg-container"+a,viewBox:"0 0 "+2*h+" "+2*h,width:2*h+"px",height:2*h+"px"}),k=N("circle",{class:d+"-stroke circle"+a,cx:v,cy:m,r:p,fill:"none",stroke:"none","stroke-width":i,"stroke-linecap":"round","stroke-dasharray":x+" "+y,transform:"translate(0,"+2*h+") rotate(-90)"}),g=N("circle",{class:d+"-fill circle"+a,cx:v,cy:m,r:h,stroke:"none",opacity:.1}),w=N("text",{style:"font-family:sans-serif;font-size: "+h/2+"px;",class:d+"-fill",x:v,y:m,fill:"none","dominant-baseline":"middle","text-anchor":"middle"}),C=document.createTextNode(s);w.appendChild(C);var b=document.createElement("style");b.innerText="@supports (--css: variables) {.circle"+a+" {animation: circle 2s;stroke-dasharray: var(--end-dash) var(--max-dash);} @keyframes circle {0% {stroke-dasharray: 0 var(--max-dash);} 75% {stroke-dasharray: var(--end-dash) var(--max-dash);} 100% {stroke-dasharray: var(--end-dash) var(--max-dash);}}}",u.appendChild(g),u.appendChild(k),u.appendChild(w),e.appendChild(u),e.appendChild(b);var S=Number(w.getAttribute("y"))+w.getBBox().height/15;w.setAttribute("y",S)}}();</script>
@@ -506,14 +527,11 @@
       var slideIndex = 1;
 
       function showImage(e){
-          function closeModal(){
-            var modal = document.getElementById("img-modal");
-            var modalImg = document.getElementById("modalImg");
-            modal.style.display = "none";
 
-            if(hasW60){
-               modalImg.classList.remove("w-60")
-            }
+          function closeModal(){
+            var modal = document.getElementById("exampleModalCenter");
+            var modalImg = document.getElementById("newModalImg");
+            modal.style.display = "none";
 
             window.addEventListener("keydown", closeModalOnEscape)
           }
@@ -526,16 +544,14 @@
           }
 
           function showModal(img){
-             var modal = document.getElementById("img-modal");
-             var modalImg = document.getElementById("modalImg");
-             var captionText = document.getElementById("caption");
+             var modal = document.getElementById("exampleModalCenter");
+             var modalImg = document.getElementById("newModalImg");
+             var captionText = document.getElementById("newCaption");
+            var closeModalBtn = document.getElementById("close-modal");
 
              modal.style.display = "block";
              modalImg.src = img.src;
-             hasW60 = img.classList.contains("w-60")
-             if(hasW60){
-               modalImg.classList.add("w-60")
-             }
+
              captionText.innerHTML = img.alt;
 
              var closeModalBtn = document.getElementById("close-modal");
@@ -548,8 +564,6 @@
           var isFrameImg = img.classList.contains("frameImg");
           if (img && isFrameImg) {
             showModal(img)
-            slideIndex = parseInt(img.dataset.index)
-            showDivs(slideIndex);
           }
       }
 
@@ -563,10 +577,13 @@
         if (n < 1) {slideIndex = x.length} ;
 
         var img = x[slideIndex-1];
-        var modalImg = document.getElementById("modalImg");
-        var captionText = document.getElementById("caption");
+        var modalImg = document.getElementById("newModalImg");
+        var captionText = document.getElementById("newCaption");
 
+        modalImg.classList.add('transparent')
         modalImg.src = img.src
+
+        setTimeout(() => modalImg.classList.remove('transparent'), 500)
         captionText.innerHTML = img.alt;
       }
 
