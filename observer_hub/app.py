@@ -17,6 +17,7 @@ from observer_hub.processors.results_processor import process_results_for_page, 
 from observer_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable, \
     logger, clean_up_data, request_to_command, get_hash
 from observer_hub.video import stop_recording, start_video_recording
+from observer_hub.wait import wait_for_page_to_load
 
 docker_client = DockerClient(docker.from_env())
 scheduler = BackgroundScheduler()
@@ -74,15 +75,19 @@ class Interceptor:
     def process(self, original_request, commands_full=False):
         session_id = original_request.path_components[3]
         host_hash = session_id[0:32]
+        session_id = session_id[32:]
+
         host_info = mapping[host_hash]
 
         host = host_info['host']
-        start_time = mapping[host_hash]['start_time']
-        session_id = session_id[32:]
+        start_time = host_info['start_time']
+        page_load_timeout = host_info['page_load_timeout']
 
         session_commands = commands[session_id][:-1]
         if commands_full:
             session_commands = commands[session_id]
+
+        wait_for_page_to_load(page_load_timeout)
 
         results = process_request(original_request, host, session_id, start_time, locators[session_id],
                                   session_commands)
@@ -140,6 +145,7 @@ class Interceptor:
             browser_name = desired_capabilities['browserName']
             version = desired_capabilities.get('version', '')
             vnc = bool(desired_capabilities.get('vnc', False))
+            page_load_timeout = int(desired_capabilities.get('page_load_timeout', 0))
 
             container_id, selenium_port, video_port = start_container(browser_name, version, vnc)
 
@@ -154,7 +160,8 @@ class Interceptor:
                 "video": f"localhost:{video_port}",
                 "report_id": report_id,
                 "desired_capabilities": desired_capabilities,
-                "thresholds": thresholds
+                "thresholds": thresholds,
+                'page_load_timeout': page_load_timeout
             }
 
         if len(path_components) > 3:
