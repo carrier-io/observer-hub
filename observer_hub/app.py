@@ -76,13 +76,12 @@ class Interceptor:
         session_id = original_request.path_components[3]
         host_hash = session_id[0:32]
         session_id = session_id[32:]
-
         host_info = mapping[host_hash]
 
         host = host_info['host']
         start_time = host_info['start_time']
         page_load_timeout = host_info['page_load_timeout']
-
+        
         session_commands = commands[session_id][:-1]
         if commands_full:
             session_commands = commands[session_id]
