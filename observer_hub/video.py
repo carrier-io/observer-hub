@@ -1,4 +1,6 @@
+import json
 import os
+import subprocess
 import tempfile
 from time import time
 
@@ -29,3 +31,17 @@ def stop_recording(host):
         f.write(video_results)
     logger.info(f"Video file {video_path}")
     return video_folder, video_path
+
+
+def get_video_length(file_path):
+    command = [
+        "ffprobe",
+        "-loglevel", "quiet",
+        "-print_format", "json",
+        "-show_format",
+        file_path
+    ]
+
+    pipe = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    out, err = pipe.communicate()
+    return int(float(json.loads(out)['format']['duration']) * 1000)
