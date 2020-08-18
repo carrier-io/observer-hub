@@ -5,8 +5,8 @@ from uuid import uuid4
 from observer_hub.constants import SCREENSHOTS_PATH
 from observer_hub.db import get_from_storage, save_to_storage
 from observer_hub.models.execution_result import ExecutionResult
-from observer_hub.processors.results_processor import compute_results_for_simple_page, compute_results_for_spa
 from observer_hub.pert_agent import PerfAgent
+from observer_hub.processors.results_processor import compute_results_for_simple_page, compute_results_for_spa
 from observer_hub.util import is_performance_entities_changed, is_dom_changed, logger
 
 

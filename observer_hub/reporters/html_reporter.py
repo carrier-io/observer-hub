@@ -4,10 +4,11 @@ import re
 from multiprocessing import Pool
 from subprocess import PIPE, Popen
 from uuid import uuid4
-
+from jinja2 import Environment, PackageLoader, select_autoescape
 from observer_hub.audits import accessibility_audit, bestpractice_audit, performance_audit, privacy_audit
 from observer_hub.constants import REPORT_PATH, FFMPEG_PATH
 from observer_hub.util import logger
+from observer_hub.video import get_video_length
 
 
 class HtmlReporter(object):
@@ -73,17 +74,15 @@ class HtmlReporter(object):
                       priv_score, acc_score, bp_score, acc_findings, perf_findings, bp_findings,
                       priv_findings, resource_timing, marks, measures, navigation_timing, info, timing,
                       base64_full_page_screen):
-        from jinja2 import Environment, PackageLoader, select_autoescape
+
         env = Environment(
             loader=PackageLoader('observer_hub', 'templates'),
             autoescape=select_autoescape(['html', 'xml'])
         )
 
-        last_response_end = max([resource['responseEnd'] for resource in resource_timing])
-        end = int(max([navigation_timing['loadEventEnd'] - navigation_timing['navigationStart'], last_response_end]))
+        end = get_video_length(video_path)
         screenshots = self.cut_video_to_screenshots(start_time, end, page_name, video_path)
         template = env.get_template('perfreport.html')
-
         res = template.render(page_name=page_name, test_status=test_status,
                               perf_score=perf_score, priv_score=priv_score, acc_score=acc_score, bp_score=bp_score,
                               screenshots=screenshots, full_page_screen=base64_full_page_screen,
@@ -144,5 +143,4 @@ def trim_screenshot(kwargs):
 def get_test_status(threshold_results):
     if threshold_results['failed'] > 0:
         return "failed"
-
     return "passed"
