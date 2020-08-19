@@ -2,13 +2,13 @@ import os
 
 from junit_xml import TestCase, TestSuite
 
-from observer_hub.constants import RESULTS_REPORT_NAME, REPORT_PATH
+from observer_hub.constants import REPORT_PATH
 from observer_hub.util import logger
 
 
-def generate_junit_report(test_name, total_thresholds):
+def generate_junit_report(test_name, total_thresholds, report_name):
     test_cases = []
-    file_name = f"junit_report_{RESULTS_REPORT_NAME}.xml"
+    file_name = f"junit_report_{report_name}.xml"
     logger.info(f"Generate report {file_name}")
 
     for item in total_thresholds["details"]:
