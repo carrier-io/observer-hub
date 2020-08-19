@@ -107,7 +107,7 @@ class HtmlReporter(object):
     def save_report(self):
         report_uuid = uuid4()
         os.makedirs(REPORT_PATH, exist_ok=True)
-        report_file_name = f'{REPORT_PATH}{self.title}_{report_uuid}.html'
+        report_file_name = f'{REPORT_PATH}/{self.title}_{report_uuid}.html'
         logger.info(f"Generate html report {report_file_name}")
         with open(report_file_name, 'w') as f:
             f.write(self.html)
@@ -119,7 +119,7 @@ class HtmlReport(object):
     def __init__(self, title, report_uuid):
         self.report_uuid = report_uuid
         self.file_name = f"{title}_{report_uuid}.html"
-        self.path = f"{REPORT_PATH}{self.file_name}"
+        self.path = f"{REPORT_PATH}/{self.file_name}"
 
 
 def sanitize(filename):

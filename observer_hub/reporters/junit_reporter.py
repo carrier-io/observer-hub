@@ -1,6 +1,8 @@
+import os
+
 from junit_xml import TestCase, TestSuite
 
-from observer_hub.constants import RESULTS_REPORT_NAME
+from observer_hub.constants import RESULTS_REPORT_NAME, REPORT_PATH
 from observer_hub.util import logger
 
 
@@ -21,8 +23,8 @@ def generate_junit_report(test_name, total_thresholds):
         test_cases.append(test_case)
 
     ts = TestSuite(test_name, test_cases)
-
-    with open(f"/tmp/reports/{file_name}", 'w') as f:
+    os.makedirs(f"{REPORT_PATH}/junit", exist_ok=True)
+    with open(f"{REPORT_PATH}/junit/{file_name}", 'w') as f:
         TestSuite.to_file(f, [ts], prettyprint=True)
 
     return file_name

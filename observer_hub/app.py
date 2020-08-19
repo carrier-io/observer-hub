@@ -45,7 +45,7 @@ def container_inspector_job():
         if diff >= TIMEOUT and v['session_id'] in execution_results.keys():
             results = execution_results[v['session_id']]
 
-            generate_report(results, v)
+            junit_report_name = generate_report(results, v)
             logger.info(f"Container {container_id} usage time exceeded timeout!")
             docker_client.get_container(container_id).remove(force=True)
             logger.info(f"Container {container_id} was deleted!")
@@ -53,7 +53,7 @@ def container_inspector_job():
             deleted.append(k)
             locators.pop(v['session_id'])
             commands.pop(v['session_id'])
-            clean_up_data(results)
+            clean_up_data(results, junit_report_name)
 
     for d in deleted:
         mapping.pop(d, None)
@@ -63,9 +63,12 @@ def generate_report(results, args):
     report_id = args['report_id']
     browser_name = args['desired_capabilities']['browserName']
     version = args['desired_capabilities']['version']
+    junit_report = args['junit_report']
+    thresholds = args['thresholds']
 
     test_name = f"{browser_name}_{version}"
-    process_results_for_test(report_id, test_name, results, [], False)
+    _, junit_report_name = process_results_for_test(report_id, test_name, results, thresholds, junit_report)
+    return junit_report_name
 
 
 class Interceptor:
@@ -81,7 +84,7 @@ class Interceptor:
         host = host_info['host']
         start_time = host_info['start_time']
         page_load_timeout = host_info['page_load_timeout']
-        
+
         session_commands = commands[session_id][:-1]
         if commands_full:
             session_commands = commands[session_id]
@@ -145,6 +148,7 @@ class Interceptor:
             version = desired_capabilities.get('version', '')
             vnc = bool(desired_capabilities.get('vnc', False))
             page_load_timeout = int(desired_capabilities.get('page_load_timeout', 0))
+            junit_report = bool(desired_capabilities.get('junit_report', False))
 
             container_id, selenium_port, video_port = start_container(browser_name, version, vnc)
 
@@ -160,7 +164,8 @@ class Interceptor:
                 "report_id": report_id,
                 "desired_capabilities": desired_capabilities,
                 "thresholds": thresholds,
-                'page_load_timeout': page_load_timeout
+                'page_load_timeout': page_load_timeout,
+                'junit_report': junit_report
             }
 
         if len(path_components) > 3:

@@ -27,6 +27,8 @@ def test_web_mail_selene():
     # options.add_argument('--window-size=1920,1080')
     options.set_capability("version", "83.0")
     options.set_capability("vnc", True)
+    options.set_capability("junit_report", True)
+
     driver = webdriver.Remote(command_executor='http://localhost:4444/wd/hub', options=options)
 
     browser = Browser(Config(

@@ -8,7 +8,7 @@ from time import sleep
 from deepdiff import DeepDiff
 import requests
 
-from observer_hub.constants import CONFIG_PATH
+from observer_hub.constants import CONFIG_PATH, REPORT_PATH
 
 logger = logging.getLogger('Observer hub')
 
@@ -116,8 +116,10 @@ def closest(lst, val):
     return lst[min(range(len(lst)), key=lambda i: abs(lst[i] - val))]
 
 
-def clean_up_data(results):
+def clean_up_data(results, junit_report_name):
     logger.info("Cleaning up generated report data...")
+    __remove_file(f"{REPORT_PATH}/junit/{junit_report_name}")
+
     for execution_result in results:
         rmtree(execution_result.video_folder, ignore_errors=True)
         __remove_file(execution_result.screenshot_path)
