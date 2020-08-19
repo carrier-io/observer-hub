@@ -119,7 +119,7 @@ def process_results_for_page(report_id, execution_result, thresholds):
     execution_result.report = report
 
 
-def process_results_for_test(report_id, scenario_name, scenario_results, thresholds, junit_report=False):
+def process_results_for_test(report_id, scenario_name, scenario_results, thresholds, junit_report):
     result_collector = ResultsCollector()
     for r in scenario_results:
         result_collector.add(r.page_identifier, r)
@@ -128,7 +128,7 @@ def process_results_for_test(report_id, scenario_name, scenario_results, thresho
 
     junit_report_name = None
     if junit_report:
-        junit_report_name = generate_junit_report(scenario_name, threshold_results)
+        junit_report_name = generate_junit_report(scenario_name, threshold_results, junit_report)
 
     notify_on_test_end(report_id, threshold_results, None, junit_report_name)
     return threshold_results, junit_report_name

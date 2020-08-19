@@ -148,7 +148,7 @@ class Interceptor:
             version = desired_capabilities.get('version', '')
             vnc = bool(desired_capabilities.get('vnc', False))
             page_load_timeout = int(desired_capabilities.get('page_load_timeout', 0))
-            junit_report = bool(desired_capabilities.get('junit_report', False))
+            junit_report = desired_capabilities.get('junit_report', "")
 
             container_id, selenium_port, video_port = start_container(browser_name, version, vnc)
 

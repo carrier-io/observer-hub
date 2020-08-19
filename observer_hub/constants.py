@@ -24,7 +24,7 @@ GALLOPER_PROJECT_ID = int(os.environ.get("GALLOPER_PROJECT_ID", "1"))
 REPORTS_BUCKET = os.environ.get("REPORTS_BUCKET", "reports")
 TESTS_BUCKET = os.environ.get("TESTS_BUCKET", "tests")
 RESULTS_BUCKET = os.environ.get("RESULTS_BUCKET", "")
-RESULTS_REPORT_NAME = os.environ.get("RESULTS_REPORT_NAME", f'{uuid4()}')
+
 
 check_ui_performance = '''return (function() {
 var metas=Array.prototype.slice.call(document.querySelectorAll('meta[name][content]'));
