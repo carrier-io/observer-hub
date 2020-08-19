@@ -5,7 +5,7 @@ from pathlib import Path
 import pytz
 import requests
 
-from observer_hub.constants import GALLOPER_URL, GALLOPER_PROJECT_ID, TESTS_BUCKET, TOKEN, ENV, RESULTS_BUCKET, \
+from observer_hub.constants import GALLOPER_URL, GALLOPER_PROJECT_ID, TOKEN, ENV, \
     REPORTS_BUCKET, REPORT_PATH, TZ, TIMEOUT
 from observer_hub.models.exporters import GalloperExporter
 from observer_hub.util import logger
@@ -50,7 +50,7 @@ def notify_on_test_start(desired_capabilities):
     return res.json()['id'], test_name
 
 
-def notify_on_test_end(report_id, total_thresholds, exception, junit_report_name):
+def notify_on_test_end(report_id, total_thresholds, exception, junit_report_name, junit_report_bucket):
     logger.info(f"About to notify on test end for report {report_id}")
 
     time = datetime.now(tz=pytz.timezone(TZ)) - timedelta(seconds=TIMEOUT)
@@ -68,7 +68,8 @@ def notify_on_test_end(report_id, total_thresholds, exception, junit_report_name
     res = requests.put(f"{GALLOPER_URL}/api/v1/observer/{GALLOPER_PROJECT_ID}", json=data,
                        headers=get_headers())
     if junit_report_name:
-        upload_artifacts(RESULTS_BUCKET, f"{REPORT_PATH}/junit/{junit_report_name}", junit_report_name)
+        logger.info(f"About to upload junit report to {junit_report_bucket}")
+        upload_artifacts(junit_report_bucket, f"{REPORT_PATH}/junit/{junit_report_name}", junit_report_name)
     return res.json()
 
 
@@ -77,21 +78,6 @@ def get_headers():
         return {'Authorization': f"Bearer {TOKEN}"}
     logger.warning("Auth TOKEN is not set!")
     return None
-
-
-def download_file(file_path):
-    logger.info(f"Downloading data {file_path} from {TESTS_BUCKET} bucket")
-
-    file_name = Path(file_path).name
-
-    res = requests.get(f"{GALLOPER_URL}/api/v1/artifacts/{GALLOPER_PROJECT_ID}/{TESTS_BUCKET}/{file_name}",
-                       headers=get_headers())
-    if res.status_code != 200:
-        raise Exception(f"Unable to download file {file_name}. Reason {res.reason}")
-    file_path = f"/tmp/data/{file_name}"
-    os.makedirs("/tmp/data", exist_ok=True)
-    open(file_path, 'wb').write(res.content)
-    return file_path
 
 
 def send_report_locators(project_id: int, report_id: int, exception):

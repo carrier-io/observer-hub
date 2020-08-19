@@ -65,9 +65,10 @@ def generate_report(results, args):
     version = args['desired_capabilities']['version']
     junit_report = args['junit_report']
     thresholds = args['thresholds']
+    junit_report_bucket = args['junit_report_bucket']
 
     test_name = f"{browser_name}_{version}"
-    _, junit_report_name = process_results_for_test(report_id, test_name, results, thresholds, junit_report)
+    _, junit_report_name = process_results_for_test(report_id, test_name, results, thresholds, junit_report, junit_report_bucket)
     return junit_report_name
 
 
@@ -149,6 +150,7 @@ class Interceptor:
             vnc = bool(desired_capabilities.get('vnc', False))
             page_load_timeout = int(desired_capabilities.get('page_load_timeout', 0))
             junit_report = desired_capabilities.get('junit_report', "")
+            junit_report_bucket = desired_capabilities.get('junit_report_bucket', "")
 
             container_id, selenium_port, video_port = start_container(browser_name, version, vnc)
 
@@ -165,7 +167,8 @@ class Interceptor:
                 "desired_capabilities": desired_capabilities,
                 "thresholds": thresholds,
                 'page_load_timeout': page_load_timeout,
-                'junit_report': junit_report
+                'junit_report': junit_report,
+                'junit_report_bucket': junit_report_bucket
             }
 
         if len(path_components) > 3:

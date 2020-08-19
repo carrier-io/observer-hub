@@ -1,5 +1,4 @@
 import os
-from uuid import uuid4
 
 ENV = os.environ.get("ENV", "")
 TZ = os.environ.get("TZ", "UTC")
@@ -18,13 +17,9 @@ FFMPEG_PATH = os.environ.get("ffmpeg_path", "ffmpeg")
 TOKEN = os.environ.get('token',
                        "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxNjQ5ODY1Ny04OTYyLTRiZmUtYjY2OS0yZDQyYjEyMzQ0ODQifQ.eyJqdGkiOiJhNjc4NDhjMC04MGYyLTRkM2MtYjJmMS0xZmUzMTgwZDQ0MGEiLCJleHAiOjAsIm5iZiI6MCwiaWF0IjoxNTk3MTQ0MTg5LCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjEwNy9hdXRoL3JlYWxtcy9jYXJyaWVyIiwiYXVkIjoiaHR0cDovLzE5Mi4xNjguMC4xMDcvYXV0aC9yZWFsbXMvY2FycmllciIsInN1YiI6IjhhOWEzY2VjLTVlMTMtNDJjZC04NzM2LWEwZTk3NTk4ZDg2ZSIsInR5cCI6Ik9mZmxpbmUiLCJhenAiOiJjYXJyaWVyLW9pZGMiLCJub25jZSI6IkpWdVYxU2gxWU9wbUxNNVoiLCJhdXRoX3RpbWUiOjAsInNlc3Npb25fc3RhdGUiOiI1OGE0NTQxYi01NzYwLTRkOGItOGEzOC03OTc3ZDcxODdhYzYiLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoib3BlbmlkIG9mZmxpbmVfYWNjZXNzIGVtYWlsIHByb2ZpbGUifQ.u8Bf2NDkZZ39RE3DE9YqeXJZ1ig9A_et9SlLyEmGH8A")
 QUOTA = int(os.environ.get("QUOTA", 5))
-
 GALLOPER_URL = os.environ.get("GALLOPER_URL", "http://localhost")
 GALLOPER_PROJECT_ID = int(os.environ.get("GALLOPER_PROJECT_ID", "1"))
 REPORTS_BUCKET = os.environ.get("REPORTS_BUCKET", "reports")
-TESTS_BUCKET = os.environ.get("TESTS_BUCKET", "tests")
-RESULTS_BUCKET = os.environ.get("RESULTS_BUCKET", "")
-
 
 check_ui_performance = '''return (function() {
 var metas=Array.prototype.slice.call(document.querySelectorAll('meta[name][content]'));
