@@ -131,7 +131,7 @@ def process_results_for_test(report_id, scenario_name, scenario_results, thresho
         junit_report_name = generate_junit_report(scenario_name, threshold_results)
 
     notify_on_test_end(report_id, threshold_results, None, junit_report_name)
-    return threshold_results
+    return threshold_results, junit_report_name
 
 
 def generate_html_report(execution_result, threshold_results):

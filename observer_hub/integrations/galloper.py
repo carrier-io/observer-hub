@@ -68,7 +68,7 @@ def notify_on_test_end(report_id, total_thresholds, exception, junit_report_name
     res = requests.put(f"{GALLOPER_URL}/api/v1/observer/{GALLOPER_PROJECT_ID}", json=data,
                        headers=get_headers())
     if junit_report_name:
-        upload_artifacts(RESULTS_BUCKET, f"{REPORT_PATH}{junit_report_name}", junit_report_name)
+        upload_artifacts(RESULTS_BUCKET, f"{REPORT_PATH}/junit/{junit_report_name}", junit_report_name)
     return res.json()
 
 

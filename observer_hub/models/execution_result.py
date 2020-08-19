@@ -1,3 +1,6 @@
+from observer_hub.models.exporters import JsonExporter
+
+
 class ExecutionResult(object):
 
     def __init__(self, page_identifier, results, screenshot_path=None,
@@ -12,3 +15,6 @@ class ExecutionResult(object):
             commands = []
         self.commands = commands
         self.report = None
+
+    def to_json(self):
+        return JsonExporter(self.results).export()['fields']
