@@ -1,6 +1,5 @@
-import os
 from datetime import datetime, timedelta
-from pathlib import Path
+from uuid import uuid4
 
 import pytz
 import requests
@@ -34,8 +33,10 @@ def notify_on_test_start(desired_capabilities):
     base_url = desired_capabilities.get('base_url', "")
     loops = desired_capabilities.get('loops', 1)
     aggregation = desired_capabilities.get('aggregation', 'max')
+    report_uid = desired_capabilities.get('report_uid', str(uuid4()))
 
     data = {
+        "report_id": report_uid,
         "test_name": test_name,
         "base_url": base_url,
         "browser_name": browser_name,
@@ -45,9 +46,9 @@ def notify_on_test_start(desired_capabilities):
         "time": datetime.now(tz=pytz.timezone(TZ)).strftime('%Y-%m-%d %H:%M:%S')
     }
 
-    res = requests.post(f"{GALLOPER_URL}/api/v1/observer/{GALLOPER_PROJECT_ID}", json=data,
-                        headers=get_headers())
-    return res.json()['id'], test_name
+    requests.post(f"{GALLOPER_URL}/api/v1/observer/{GALLOPER_PROJECT_ID}", json=data,
+                  headers=get_headers())
+    return report_uid, test_name
 
 
 def notify_on_test_end(report_id, total_thresholds, exception, junit_report_name, junit_report_bucket):
