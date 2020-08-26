@@ -4,22 +4,12 @@ from uuid import uuid4
 import pytz
 import requests
 
-from observer_hub.constants import GALLOPER_URL, GALLOPER_PROJECT_ID, TOKEN, ENV, \
+from galloper_api_client import create_galloper_report, send_gelloper_report_results, upload_artifacts, \
+    finalize_galloper_report
+from observer_hub.constants import GALLOPER_URL, GALLOPER_PROJECT_ID, ENV, \
     REPORTS_BUCKET, REPORT_PATH, TZ, TIMEOUT
 from observer_hub.models.exporters import GalloperExporter
 from observer_hub.util import logger
-
-
-def get_thresholds(test_name):
-    logger.info(f"Get thresholds for: {test_name} {ENV}")
-    res = requests.get(
-        f"{GALLOPER_URL}/api/v1/thresholds/{GALLOPER_PROJECT_ID}/ui?name={test_name}&environment={ENV}&order=asc",
-        headers=get_headers())
-
-    if res.status_code != 200:
-        raise Exception(f"Can not get thresholds, Reasons {res.reason}")
-
-    return res.json()
 
 
 def notify_on_test_start(desired_capabilities):
@@ -46,8 +36,8 @@ def notify_on_test_start(desired_capabilities):
         "time": datetime.now(tz=pytz.timezone(TZ)).strftime('%Y-%m-%d %H:%M:%S')
     }
 
-    requests.post(f"{GALLOPER_URL}/api/v1/observer/{GALLOPER_PROJECT_ID}", json=data,
-                  headers=get_headers())
+    create_galloper_report(data)
+
     return report_uid, test_name
 
 
@@ -66,34 +56,11 @@ def notify_on_test_end(report_id, total_thresholds, exception, junit_report_name
     if exception:
         data["exception"] = str(exception)
 
-    res = requests.put(f"{GALLOPER_URL}/api/v1/observer/{GALLOPER_PROJECT_ID}", json=data,
-                       headers=get_headers())
+    finalize_galloper_report(data)
+
     if junit_report_name:
         logger.info(f"About to upload junit report to {junit_report_bucket}")
         upload_artifacts(junit_report_bucket, f"{REPORT_PATH}/junit/{junit_report_name}", junit_report_name)
-    return res.json()
-
-
-def get_headers():
-    if TOKEN:
-        return {'Authorization': f"Bearer {TOKEN}"}
-    logger.warning("Auth TOKEN is not set!")
-    return None
-
-
-def send_report_locators(project_id: int, report_id: int, exception):
-    requests.put(f"{GALLOPER_URL}/api/v1/observer/{project_id}/{report_id}",
-                 json={"exception": exception, "status": ""},
-                 headers=get_headers())
-
-
-def upload_artifacts(bucket_name, file_path, file_name):
-    file = {'file': open(file_path, 'rb')}
-
-    res = requests.post(f"{GALLOPER_URL}/api/v1/artifacts/{GALLOPER_PROJECT_ID}/{bucket_name}/{file_name}",
-                        files=file,
-                        headers=get_headers())
-    return res.json()
 
 
 def notify_on_command_end(report_id, report, execution_result, thresholds):
@@ -116,9 +83,6 @@ def notify_on_command_end(report_id, report, execution_result, thresholds):
         "locators": execution_result.commands
     }
 
-    res = requests.post(f"{GALLOPER_URL}/api/v1/observer/{GALLOPER_PROJECT_ID}/{report_id}", json=data,
-                        headers=get_headers())
+    send_gelloper_report_results(report_id, data)
 
     upload_artifacts(REPORTS_BUCKET, report.path, report.file_name)
-
-    return res.json()["id"]
