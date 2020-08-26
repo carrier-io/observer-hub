@@ -2,7 +2,7 @@
 
 ```
 docker run --network host \
--v /tmp/observer_hub:/tmp/hub \
+-v /tmp/hub:/tmp/hub \
 -v /var/run/docker.sock:/var/run/docker.sock \
 -e TZ=UTC getcarrier/observer-hub:latest
 ```
