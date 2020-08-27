@@ -7,7 +7,7 @@ from mitmproxy import http
 from mitmproxy import proxy, options
 from mitmproxy.tools.dump import DumpMaster
 
-from galloper_api_client import get_thresholds
+from observer_hub.integrations.galloper_api_client import get_thresholds
 from observer_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION, QUOTA, \
     VNC_PORT, PORT
 from observer_hub.docker_client import DockerClient
