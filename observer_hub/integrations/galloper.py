@@ -1,12 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from uuid import uuid4
 
-import pytz
-
+from observer_hub.constants import REPORTS_BUCKET, REPORT_PATH, TIMEOUT
 from observer_hub.integrations.galloper_api_client import create_galloper_report, send_gelloper_report_results, \
     upload_artifacts, \
     finalize_galloper_report
-from observer_hub.constants import REPORTS_BUCKET, REPORT_PATH, TIMEOUT
 from observer_hub.models.exporters import GalloperExporter
 from observer_hub.util import logger, current_time
 
