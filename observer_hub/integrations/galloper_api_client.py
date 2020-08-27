@@ -1,7 +1,9 @@
-import requests
-from observer_hub.constants import GALLOPER_URL, GALLOPER_PROJECT_ID, TOKEN, ENV
-from observer_hub.util import logger
 from traceback import format_exc
+
+import requests
+
+from observer_hub.constants import GALLOPER_URL, TOKEN
+from observer_hub.util import logger
 
 
 def get_headers():
@@ -11,28 +13,28 @@ def get_headers():
     return None
 
 
-def create_galloper_report(data):
+def create_galloper_report(galloper_project_id, data):
     try:
-        requests.post(f"{GALLOPER_URL}/api/v1/observer/{GALLOPER_PROJECT_ID}", json=data,
+        requests.post(f"{GALLOPER_URL}/api/v1/observer/{galloper_project_id}", json=data,
                       headers=get_headers())
     except Exception:
         logger.error(format_exc())
 
 
-def finalize_galloper_report(data):
+def finalize_galloper_report(galloper_project_id, data):
     try:
-        requests.put(f"{GALLOPER_URL}/api/v1/observer/{GALLOPER_PROJECT_ID}", json=data,
+        requests.put(f"{GALLOPER_URL}/api/v1/observer/{galloper_project_id}", json=data,
                      headers=get_headers())
     except Exception:
         logger.error(format_exc())
 
 
-def get_thresholds(test_name):
-    logger.info(f"Get thresholds for: {test_name} {ENV}")
+def get_thresholds(galloper_project_id, test_name, env):
+    logger.info(f"Get thresholds for: {test_name} {env}")
     res = None
     try:
         res = requests.get(
-            f"{GALLOPER_URL}/api/v1/thresholds/{GALLOPER_PROJECT_ID}/ui?name={test_name}&environment={ENV}&order=asc",
+            f"{GALLOPER_URL}/api/v1/thresholds/{galloper_project_id}/ui?name={test_name}&environment={env}&order=asc",
             headers=get_headers())
     except Exception:
         logger.error(format_exc())
@@ -46,19 +48,19 @@ def get_thresholds(test_name):
         return {}
 
 
-def send_gelloper_report_results(report_id, data):
+def send_gelloper_report_results(galloper_project_id, report_id, data):
     try:
-        requests.post(f"{GALLOPER_URL}/api/v1/observer/{GALLOPER_PROJECT_ID}/{report_id}", json=data,
-                            headers=get_headers())
+        requests.post(f"{GALLOPER_URL}/api/v1/observer/{galloper_project_id}/{report_id}", json=data,
+                      headers=get_headers())
     except Exception:
         logger.error(format_exc())
 
 
-def upload_artifacts(bucket_name, file_path, file_name):
+def upload_artifacts(galloper_project_id, bucket_name, file_path, file_name):
     file = {'file': open(file_path, 'rb')}
 
     try:
-        requests.post(f"{GALLOPER_URL}/api/v1/artifacts/{GALLOPER_PROJECT_ID}/{bucket_name}/{file_name}",
+        requests.post(f"{GALLOPER_URL}/api/v1/artifacts/{galloper_project_id}/{bucket_name}/{file_name}",
                       files=file,
                       headers=get_headers())
     except Exception:
