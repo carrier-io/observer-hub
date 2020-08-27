@@ -7,10 +7,11 @@ from mitmproxy import http
 from mitmproxy import proxy, options
 from mitmproxy.tools.dump import DumpMaster
 
+from galloper_api_client import get_thresholds
 from observer_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION, QUOTA, \
     VNC_PORT, PORT
 from observer_hub.docker_client import DockerClient
-from observer_hub.integrations.galloper import notify_on_test_start, get_thresholds
+from observer_hub.integrations.galloper import notify_on_test_start
 from observer_hub.models.collector import CommandsCollector, LocatorsCollector, ExecutionResultsCollector
 from observer_hub.processors.request_processors import process_request
 from observer_hub.processors.results_processor import process_results_for_page, process_results_for_test
@@ -68,7 +69,8 @@ def generate_report(results, args):
     junit_report_bucket = args['junit_report_bucket']
 
     test_name = f"{browser_name}_{version}"
-    _, junit_report_name = process_results_for_test(report_id, test_name, results, thresholds, junit_report, junit_report_bucket)
+    _, junit_report_name = process_results_for_test(report_id, test_name, results, thresholds, junit_report,
+                                                    junit_report_bucket)
     return junit_report_name
 
 
