@@ -8,7 +8,7 @@ from mitmproxy import proxy, options
 from mitmproxy.tools.dump import DumpMaster
 
 from observer_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION, QUOTA, \
-    VNC_PORT
+    VNC_PORT, PORT
 from observer_hub.docker_client import DockerClient
 from observer_hub.integrations.galloper import notify_on_test_start, get_thresholds
 from observer_hub.models.collector import CommandsCollector, LocatorsCollector, ExecutionResultsCollector
@@ -259,12 +259,12 @@ def get_container_configuration(browser_name, version):
 
 def start_proxy():
     opts = options.Options(listen_host='0.0.0.0',
-                           listen_port=4444,
+                           listen_port=PORT,
                            mode="transparent")
     pconf = proxy.config.ProxyConfig(opts)
     m = DumpMaster(opts)
     m.server = proxy.server.ProxyServer(pconf)
-    logger.info('Intercepting Proxy listening on 4444')
+    logger.info(f'Intercepting Proxy listening on {PORT}')
 
     m.addons.add(Interceptor())
     try:

@@ -1,5 +1,6 @@
 import os
 
+PORT = int(os.environ.get("PORT", 4444))
 ENV = os.environ.get("ENV", "")
 TZ = os.environ.get("TZ", "UTC")
 EXPORTERS_PATH = os.environ.get("EXPORTERS_PATH", "/tmp/reports")
