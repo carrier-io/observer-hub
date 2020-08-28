@@ -1,8 +1,6 @@
 import os
 
 PORT = int(os.environ.get("PORT", 4444))
-ENV = os.environ.get("ENV", "")
-TZ = os.environ.get("TZ", "UTC")
 EXPORTERS_PATH = os.environ.get("EXPORTERS_PATH", "/tmp/reports")
 SCHEDULER_INTERVAL = int(os.environ.get("SCHEDULER_INTERVAL", 30))
 TIMEOUT = int(os.environ.get("TIMEOUT", 60))
@@ -17,8 +15,8 @@ SCREENSHOTS_PATH = '/tmp/hub/screenshots'
 FFMPEG_PATH = os.environ.get("ffmpeg_path", "ffmpeg")
 TOKEN = os.environ.get('TOKEN', "")
 QUOTA = int(os.environ.get("QUOTA", 5))
+
 GALLOPER_URL = os.environ.get("GALLOPER_URL", "http://localhost")
-GALLOPER_PROJECT_ID = int(os.environ.get("GALLOPER_PROJECT_ID", "1"))
 REPORTS_BUCKET = os.environ.get("REPORTS_BUCKET", "reports")
 
 check_ui_performance = '''return (function() {

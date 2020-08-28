@@ -67,10 +67,13 @@ def generate_report(results, args):
     junit_report = args['junit_report']
     thresholds = args['thresholds']
     junit_report_bucket = args['junit_report_bucket']
+    galloper_project_id = args['galloper_project_id']
+    tz = args['tz']
 
     test_name = f"{browser_name}_{version}"
-    _, junit_report_name = process_results_for_test(report_id, test_name, results, thresholds, junit_report,
-                                                    junit_report_bucket)
+    _, junit_report_name = process_results_for_test(galloper_project_id, report_id, test_name, results, thresholds,
+                                                    junit_report,
+                                                    junit_report_bucket, tz)
     return junit_report_name
 
 
@@ -105,7 +108,8 @@ class Interceptor:
         if results.results:
             report_id = host_info["report_id"]
             thresholds = host_info['thresholds']
-            process_results_for_page(report_id, results, thresholds)
+            galloper_project_id = host_info['galloper_project_id']
+            process_results_for_page(galloper_project_id, report_id, results, thresholds)
             execution_results.add(session_id, results)
 
         return host_hash, video_host
@@ -153,13 +157,16 @@ class Interceptor:
             page_load_timeout = int(desired_capabilities.get('page_load_timeout', 0))
             junit_report = desired_capabilities.get('junit_report', "")
             junit_report_bucket = desired_capabilities.get('junit_report_bucket', "")
+            galloper_project_id = desired_capabilities.get('galloper_project_id', 1)
+            env = desired_capabilities.get('env', '')
+            tz = desired_capabilities.get('tz', 'UTC')
 
             container_id, selenium_port, video_port = start_container(browser_name, version, vnc)
 
             host = f"localhost:{selenium_port}"
             host_hash = get_hash(host)
-            report_id, test_name = notify_on_test_start(desired_capabilities)
-            thresholds = get_thresholds(test_name)
+            report_id, test_name = notify_on_test_start(galloper_project_id, desired_capabilities)
+            thresholds = get_thresholds(galloper_project_id, test_name, env)
 
             mapping[host_hash] = {
                 "host": f"localhost:{selenium_port}",
@@ -170,7 +177,10 @@ class Interceptor:
                 "thresholds": thresholds,
                 'page_load_timeout': page_load_timeout,
                 'junit_report': junit_report,
-                'junit_report_bucket': junit_report_bucket
+                'junit_report_bucket': junit_report_bucket,
+                'galloper_project_id': galloper_project_id,
+                'env': env,
+                'tz': tz
             }
 
         if len(path_components) > 3:

@@ -3,10 +3,14 @@ import json
 import logging
 import math
 import os
+from datetime import datetime
 from shutil import rmtree
 from time import sleep
+
+import pytz
 from deepdiff import DeepDiff
 import requests
+from pytz import UnknownTimeZoneError
 
 from observer_hub.constants import CONFIG_PATH, REPORT_PATH
 
@@ -156,3 +160,11 @@ def request_to_command(original_request, locators):
 
 def get_hash(data):
     return hashlib.md5(data.encode('utf-8')).hexdigest()
+
+
+def current_time(tz):
+    try:
+        return datetime.now(tz=pytz.timezone(tz))
+    except UnknownTimeZoneError:
+        logger.warning(f"Wrong timezone {tz}. Defaulting to UTC")
+        return datetime.now(tz=pytz.timezone("UTC"))

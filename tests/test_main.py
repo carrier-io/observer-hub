@@ -12,9 +12,11 @@ def browser():
     options.set_capability("vnc", True)
     options.set_capability("junit_report", "test_report")
     # options.set_capability("report_uid", str(uuid4()))
-    options.set_capability("report_uid", "123")
+    options.set_capability("report_uid", "12345")
+    options.set_capability('galloper_project_id', 1)
+    options.set_capability('tz', 'Europe/Kiev')
 
-    driver = webdriver.Remote(command_executor='http://localhost:4444/wd/hub', options=options)
+    driver = webdriver.Remote(command_executor='http://test:test-password@localhost:4444/wd/hub', options=options)
 
     browser = Browser(Config(
         driver=driver,
