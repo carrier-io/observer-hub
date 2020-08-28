@@ -4,8 +4,7 @@
 docker run --network host \
 -v /tmp/hub:/tmp/hub \
 -v /var/run/docker.sock:/var/run/docker.sock \
--e TZ=UTC \
--e TOKEN= \
+-e TOKEN=${CARRIER_AUTH_TOKEN} \
 getcarrier/observer-hub:latest
 ```
 
