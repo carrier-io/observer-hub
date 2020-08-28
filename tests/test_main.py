@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import pytest
 from selene import Config, Browser, have
 from selene.support import webdriver
@@ -6,13 +8,14 @@ from selenium import webdriver
 
 @pytest.fixture(scope="session")
 def browser():
-    options = webdriver.ChromeOptions()
-    # options.add_argument('--window-size=1920,1080')
-    options.set_capability("version", "83.0")
+    # options = webdriver.ChromeOptions()
+    options = webdriver.FirefoxOptions()
+
+    options.set_capability("version", "73.0")
     options.set_capability("vnc", True)
     options.set_capability("junit_report", "test_report")
-    # options.set_capability("report_uid", str(uuid4()))
-    options.set_capability("report_uid", "12345")
+    options.set_capability("report_uid", str(uuid4()))
+    # options.set_capability("report_uid", "12345")
     options.set_capability('galloper_project_id', 1)
     options.set_capability('tz', 'Europe/Kiev')
 
