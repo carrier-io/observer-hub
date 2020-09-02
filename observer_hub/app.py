@@ -158,7 +158,7 @@ class Interceptor:
             junit_report = desired_capabilities.get('junit_report', "")
             junit_report_bucket = desired_capabilities.get('junit_report_bucket', "")
             galloper_project_id = desired_capabilities.get('galloper_project_id', 1)
-            env = desired_capabilities.get('env', '')
+            env = desired_capabilities.get('venv', '')
             tz = desired_capabilities.get('tz', 'UTC')
 
             container_id, selenium_port, video_port = start_container(browser_name, version, vnc)
