@@ -10,7 +10,10 @@ class DockerClient(object):
             return DockerContainer()
 
     def run(self, image, **kwargs):
-        return self.client.containers.run(image, **kwargs)
+        try:
+            return self.client.containers.run(image, **kwargs)
+        except Exception:
+            return None
 
     def port(self, container_id, port):
         return self.client.api.port(container_id, port)[0]["HostPort"]
