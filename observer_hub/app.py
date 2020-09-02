@@ -199,6 +199,7 @@ class Interceptor:
             host_hash = session_id[0:32]
             host = mapping[host_hash]['host']
             path_components[3] = session_id[32:]
+            container_id = mapping[host_hash]['container_id']
 
         if container_id is None:
             content = {"value": {"error": -1, "message": f"There is no container for {browser_name}:{version}"}}
