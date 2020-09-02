@@ -31,9 +31,12 @@ commands = CommandsCollector()
 
 
 def container_inspector_job():
-    logger.info(f'There are {len(mapping.keys())} containers running...')
     deleted = []
     for k, v in mapping.items():
+        if v['container_id'] is None:
+            deleted.append(k)
+            continue
+
         if 'lastly_used' not in v.keys():
             continue
         lastly_used = datetime.strptime(v['lastly_used'], '%Y-%m-%d %H:%M:%S.%f')
@@ -59,6 +62,7 @@ def container_inspector_job():
     for d in deleted:
         mapping.pop(d, None)
 
+    logger.info(f'There are {len(mapping.keys())} containers running...')
 
 def generate_report(results, args):
     report_id = args['report_id']
@@ -120,6 +124,9 @@ class Interceptor:
         path_components = list(original_request.path_components)
         host = None
         host_hash = None
+        container_id = None
+        selenium_port = None
+        video_port = None
 
         if flow.request.path == "/status" or flow.request.path == '/favicon.ico':
             content = {"quota": QUOTA, "active": len(mapping.keys())}
@@ -161,33 +168,46 @@ class Interceptor:
             env = desired_capabilities.get('env', '')
             tz = desired_capabilities.get('tz', 'UTC')
 
-            container_id, selenium_port, video_port = start_container(browser_name, version, vnc)
+            try:
+                container_id, selenium_port, video_port = start_container(browser_name, version, vnc)
+            except Exception:
+                logger.error(f"There is no container for {browser_name}:{version}")
 
-            host = f"localhost:{selenium_port}"
-            host_hash = get_hash(host)
-            report_id, test_name = notify_on_test_start(galloper_project_id, desired_capabilities)
-            thresholds = get_thresholds(galloper_project_id, test_name, env)
+            if container_id is not None:
+                host = f"localhost:{selenium_port}"
+                host_hash = get_hash(host)
+                report_id, test_name = notify_on_test_start(galloper_project_id, desired_capabilities)
+                thresholds = get_thresholds(galloper_project_id, test_name, env)
 
-            mapping[host_hash] = {
-                "host": f"localhost:{selenium_port}",
-                "container_id": container_id,
-                "video": f"localhost:{video_port}",
-                "report_id": report_id,
-                "desired_capabilities": desired_capabilities,
-                "thresholds": thresholds,
-                'page_load_timeout': page_load_timeout,
-                'junit_report': junit_report,
-                'junit_report_bucket': junit_report_bucket,
-                'galloper_project_id': galloper_project_id,
-                'env': env,
-                'tz': tz
-            }
+                mapping[host_hash] = {
+                    "host": f"localhost:{selenium_port}",
+                    "container_id": container_id,
+                    "video": f"localhost:{video_port}",
+                    "report_id": report_id,
+                    "desired_capabilities": desired_capabilities,
+                    "thresholds": thresholds,
+                    'page_load_timeout': page_load_timeout,
+                    'junit_report': junit_report,
+                    'junit_report_bucket': junit_report_bucket,
+                    'galloper_project_id': galloper_project_id,
+                    'env': env,
+                    'tz': tz
+                }
 
         if len(path_components) > 3:
             session_id = path_components[3]
             host_hash = session_id[0:32]
             host = mapping[host_hash]['host']
             path_components[3] = session_id[32:]
+
+        if container_id is None:
+            content = {"value": {"error": -1, "message": f"There is no container for {browser_name}:{version}"}}
+            response = json.dumps(content).encode('utf-8')
+            flow.response = http.HTTPResponse.make(
+                500,
+                response
+            )
+            return
 
         url = f"{original_request.scheme}://{host}/{'/'.join(path_components)}"
 
@@ -203,10 +223,19 @@ class Interceptor:
     def response(self, flow):
         response = flow.response.content
 
+        if flow.response.status_code == 500:
+            flow.response = http.HTTPResponse.make(
+                flow.response.status_code,
+                response,
+                flow.response.headers.fields
+            )
+            return
+
         if flow.request.path == "/wd/hub/session":
             host_hash = get_hash(f"localhost:{flow.request.port}")
 
             content = json.loads(response.decode('utf-8'))
+
             session_id = content['value']['sessionId']
             content['value']['sessionId'] = host_hash + session_id
             response = json.dumps(content).encode('utf-8')
