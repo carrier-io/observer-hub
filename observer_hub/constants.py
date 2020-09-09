@@ -13,10 +13,7 @@ REPORT_PATH = '/tmp/hub/reports'
 VIDEO_PATH = '/tmp/hub/videos'
 SCREENSHOTS_PATH = '/tmp/hub/screenshots'
 FFMPEG_PATH = os.environ.get("ffmpeg_path", "ffmpeg")
-TOKEN = os.environ.get('TOKEN', "")
 QUOTA = int(os.environ.get("QUOTA", 5))
-
-GALLOPER_URL = os.environ.get("GALLOPER_URL", "http://localhost")
 REPORTS_BUCKET = os.environ.get("REPORTS_BUCKET", "reports")
 
 check_ui_performance = '''return (function() {

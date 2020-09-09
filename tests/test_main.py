@@ -8,18 +8,22 @@ from selenium import webdriver
 
 @pytest.fixture(scope="session")
 def browser():
-    # options = webdriver.ChromeOptions()
-    options = webdriver.FirefoxOptions()
+    options = webdriver.ChromeOptions()
+    # options = webdriver.FirefoxOptions()
 
-    options.set_capability("version", "73.0")
+    options.set_capability("version", "83.0")
+    options.set_capability("venv", "QA")
     options.set_capability("vnc", True)
     options.set_capability("junit_report", "test_report")
     options.set_capability("report_uid", str(uuid4()))
     # options.set_capability("report_uid", "12345")
+
+    options.set_capability("galloper_url", "http://localhost")
+    options.set_capability("galloper_token", "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxNjQ5ODY1Ny04OTYyLTRiZmUtYjY2OS0yZDQyYjEyMzQ0ODQifQ.eyJqdGkiOiI5ZjVjYzRlOS1kMzFlLTQwZGYtYTZlMy03ZDBmY2VjNWRkMjciLCJleHAiOjAsIm5iZiI6MCwiaWF0IjoxNTk5NjQ4NTg3LCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjExNi9hdXRoL3JlYWxtcy9jYXJyaWVyIiwiYXVkIjoiaHR0cDovLzE5Mi4xNjguMC4xMTYvYXV0aC9yZWFsbXMvY2FycmllciIsInN1YiI6IjhhOWEzY2VjLTVlMTMtNDJjZC04NzM2LWEwZTk3NTk4ZDg2ZSIsInR5cCI6Ik9mZmxpbmUiLCJhenAiOiJjYXJyaWVyLW9pZGMiLCJub25jZSI6IlRvTEFZZk9LM2F1YjNWdFQiLCJhdXRoX3RpbWUiOjAsInNlc3Npb25fc3RhdGUiOiI3MzAzZWJkNC00MmYwLTRiMDktYTFmZS0wMjk5MWFlYThmZmMiLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoib3BlbmlkIG9mZmxpbmVfYWNjZXNzIGVtYWlsIHByb2ZpbGUifQ.GfY1HS0YyrB1EjCkl9B8vDu7m6meT_DAq-ya0GT1UP4")
     options.set_capability('galloper_project_id', 1)
     options.set_capability('tz', 'Europe/Kiev')
 
-    driver = webdriver.Remote(command_executor='http://test:test-password@localhost:4444/wd/hub', options=options)
+    driver = webdriver.Remote(command_executor='http://localhost:4444/wd/hub', options=options)
 
     browser = Browser(Config(
         driver=driver,

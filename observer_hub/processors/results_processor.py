@@ -112,14 +112,17 @@ def compute_results_for_spa(old, new):
     return result
 
 
-def process_results_for_page(galloper_project_id, report_id, execution_result, thresholds):
+def process_results_for_page(galloper_url, galloper_project_id, galloper_token, report_id, execution_result,
+                             thresholds):
     threshold_results = assert_page_thresholds(execution_result, thresholds)
     report = generate_html_report(execution_result, threshold_results)
-    notify_on_command_end(galloper_project_id, report_id, report, execution_result, threshold_results)
+    notify_on_command_end(galloper_url, galloper_project_id, galloper_token, report_id, report, execution_result,
+                          threshold_results)
     execution_result.report = report
 
 
-def process_results_for_test(galloper_project_id, report_id, scenario_name, scenario_results, thresholds, junit_report,
+def process_results_for_test(galloper_url, galloper_project_id, galloper_token, report_id, scenario_name,
+                             scenario_results, thresholds, junit_report,
                              junit_report_bucket, tz):
     result_collector = ResultsCollector()
     for r in scenario_results:
@@ -131,7 +134,8 @@ def process_results_for_test(galloper_project_id, report_id, scenario_name, scen
     if junit_report:
         junit_report_name = generate_junit_report(scenario_name, threshold_results, junit_report)
 
-    notify_on_test_end(galloper_project_id, report_id, threshold_results, None, junit_report_name, junit_report_bucket,
+    notify_on_test_end(galloper_url, galloper_project_id, galloper_token, report_id, threshold_results, None,
+                       junit_report_name, junit_report_bucket,
                        tz)
     return threshold_results, junit_report_name
 
