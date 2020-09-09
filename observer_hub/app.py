@@ -72,10 +72,13 @@ def generate_report(results, args):
     thresholds = args['thresholds']
     junit_report_bucket = args['junit_report_bucket']
     galloper_project_id = args['galloper_project_id']
+    galloper_url = args['galloper_url']
+    galloper_token = args['galloper_token']
     tz = args['tz']
 
     test_name = f"{browser_name}_{version}"
-    _, junit_report_name = process_results_for_test(galloper_project_id, report_id, test_name, results, thresholds,
+    _, junit_report_name = process_results_for_test(galloper_url, galloper_project_id, galloper_token, report_id,
+                                                    test_name, results, thresholds,
                                                     junit_report,
                                                     junit_report_bucket, tz)
     return junit_report_name
@@ -113,7 +116,9 @@ class Interceptor:
             report_id = host_info["report_id"]
             thresholds = host_info['thresholds']
             galloper_project_id = host_info['galloper_project_id']
-            process_results_for_page(galloper_project_id, report_id, results, thresholds)
+            galloper_url = host_info['galloper_url']
+            galloper_token = host_info['galloper_token']
+            process_results_for_page(galloper_url, galloper_project_id, galloper_token, report_id, results, thresholds)
             execution_results.add(session_id, results)
 
         return host_hash, video_host
@@ -165,6 +170,8 @@ class Interceptor:
             junit_report = desired_capabilities.get('junit_report', "")
             junit_report_bucket = desired_capabilities.get('junit_report_bucket', "")
             galloper_project_id = desired_capabilities.get('galloper_project_id', 1)
+            galloper_token = desired_capabilities.get('galloper_token', None)
+            galloper_url = desired_capabilities.get('galloper_url', 'http://localhost')
             env = desired_capabilities.get('venv', '')
             tz = desired_capabilities.get('tz', 'UTC')
 
@@ -176,8 +183,9 @@ class Interceptor:
             if container_id is not None:
                 host = f"localhost:{selenium_port}"
                 host_hash = get_hash(host)
-                report_id, test_name = notify_on_test_start(galloper_project_id, desired_capabilities)
-                thresholds = get_thresholds(galloper_project_id, test_name, env)
+                report_id, test_name = notify_on_test_start(galloper_url, galloper_project_id, galloper_token,
+                                                            desired_capabilities)
+                thresholds = get_thresholds(galloper_url, galloper_project_id, galloper_token, test_name, env)
 
                 mapping[host_hash] = {
                     "host": f"localhost:{selenium_port}",
@@ -189,7 +197,9 @@ class Interceptor:
                     'page_load_timeout': page_load_timeout,
                     'junit_report': junit_report,
                     'junit_report_bucket': junit_report_bucket,
+                    'galloper_url': galloper_url,
                     'galloper_project_id': galloper_project_id,
+                    'galloper_token': galloper_token,
                     'env': env,
                     'tz': tz
                 }
