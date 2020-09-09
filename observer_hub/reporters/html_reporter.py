@@ -41,12 +41,18 @@ class HtmlReporter(object):
                                        bp_findings=self.bp_data,
                                        priv_findings=self.priv_data,
                                        resource_timing=request_params['performanceResources'],
-                                       marks=request_params['marks'],
-                                       measures=request_params['measures'],
+                                       marks=self.__fix_details(request_params['marks']),
+                                       measures=self.__fix_details(request_params['measures']),
                                        navigation_timing=request_params['performancetiming'],
                                        info=request_params['info'],
                                        timing=request_params['timing'],
                                        base64_full_page_screen=base64_encoded_string)
+
+    def __fix_details(self, values):
+        for value in values:
+            if "detail" in value.keys() and value["detail"] is None:
+                value['detail'] = ''
+        return values
 
     def concut_video(self, start, end, page_name, video_path):
         logger.info(f"Concut video {video_path}")
