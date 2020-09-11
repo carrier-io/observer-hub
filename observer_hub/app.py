@@ -158,7 +158,7 @@ class Interceptor:
             mapping[host_hash]['start_time'] = start_time
 
         if "/wd/hub/session" in original_request.path and original_request.method == "DELETE" \
-                and len(original_request.path_components) == 4:
+                and len(original_request.path_components) >= 4:
             self.process(original_request, commands_full=True)
 
         if original_request.path == "/wd/hub/session":
@@ -283,6 +283,7 @@ def start_container(browser_name, version, vnc):
     ports = {f"{SELENIUM_PORT}": None, f"{VIDEO_PORT}": None}
     if vnc:
         ports[VNC_PORT] = None
+        env.append("ENABLE_VNC=true")
 
     logger.info(f"Starting container {container_image} ...")
     container = docker_client.run(
