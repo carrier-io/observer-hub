@@ -64,6 +64,7 @@ def container_inspector_job():
 
     logger.info(f'There are {len(mapping.keys())} containers running...')
 
+
 def generate_report(results, args):
     report_id = args['report_id']
     browser_name = args['desired_capabilities']['browserName']
@@ -104,7 +105,11 @@ class Interceptor:
 
         wait_for_page_to_load(page_load_timeout)
 
-        results = process_request(original_request, host, session_id, start_time, locators[session_id],
+        if session_id not in locators.keys():
+            return
+        locators_list = locators[session_id]
+
+        results = process_request(original_request, host, session_id, start_time, locators_list,
                                   session_commands)
 
         video_host = host_info['video']
@@ -158,6 +163,10 @@ class Interceptor:
             mapping[host_hash]['start_time'] = start_time
 
         if "/wd/hub/session" in original_request.path and original_request.method == "DELETE" \
+                and len(original_request.path_components) >= 4:
+            self.process(original_request, commands_full=True)
+
+        if original_request.path.endswith('/url') and original_request.method == "POST" \
                 and len(original_request.path_components) >= 4:
             self.process(original_request, commands_full=True)
 
