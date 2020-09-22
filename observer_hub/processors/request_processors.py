@@ -73,6 +73,9 @@ def get_page_identifier(current_url, title, original_request, locators):
     if original_request.method == "DELETE":
         return f"{title}:{parsed_url.path}@close_browser()"
 
+    if original_request.method == "POST" and original_request.path.endswith('/url'):
+        return f"{title}:{parsed_url.path}@before_refresh()"
+
     command = original_request.path_components[6]
     element_id = original_request.path_components[5]
     locator = locators[element_id]
