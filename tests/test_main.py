@@ -50,10 +50,11 @@ def test_web_mail_selene(browser):
 
 def test_web_mail_selene2(browser):
     browser.open('/showcase/typescript/webmail/#/home')
-    browser.element("#tree li.e-level-2[data-uid='21']").click()
+    browser.element("#tree li.e-level-2[data-uid='11']").click()
 
-    browser.element("li.e-level-1[data-uid='SF10205']").click()
-    browser.element("#sub").should(have.exact_text('Fletcher Beck'))
+    browser.element("li.e-level-1[data-uid='SF10095']").click()
+    browser.element("#sub").should(have.exact_text('Gemma Roberson'))
 
-    browser.element("li.e-level-1[data-uid='SF10202']").click()
-    browser.element("#sub").should(have.exact_text('Oscar Mcconnell'))
+    browser.element("#tree li.e-level-2[data-uid='12']").click()
+    browser.element("li.e-level-1[data-uid='SF10142']").click()
+    browser.element("#sub").should(have.exact_text('Elijah Berry'))
