@@ -12,7 +12,7 @@ def browser():
     options = webdriver.ChromeOptions()
     # options = webdriver.FirefoxOptions()
 
-    options.set_capability("version", "83.0")
+    options.set_capability("version", "84.0")
     options.set_capability("venv", "QA")
     options.set_capability("vnc", True)
     options.set_capability("junit_report", "test_report")

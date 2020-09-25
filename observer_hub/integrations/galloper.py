@@ -21,7 +21,7 @@ def notify_on_test_start(galloper_url, galloper_project_id, galloper_token, desi
     loops = desired_capabilities.get('loops', 1)
     aggregation = desired_capabilities.get('aggregation', 'max')
     report_uid = desired_capabilities.get('report_uid', str(uuid4()))
-    env = desired_capabilities.get('env', '')
+    env = desired_capabilities.get('venv', '')
     tz = desired_capabilities.get('tz', 'UTC')
 
     data = {

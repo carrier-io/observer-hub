@@ -181,7 +181,7 @@ class Interceptor:
             galloper_project_id = desired_capabilities.get('galloper_project_id', 1)
             galloper_token = desired_capabilities.get('galloper_token', None)
             galloper_url = desired_capabilities.get('galloper_url', 'http://localhost')
-            env = desired_capabilities.get('venv', '')
+            env = desired_capabilities.get('venv', 'default')
             tz = desired_capabilities.get('tz', 'UTC')
 
             try:
