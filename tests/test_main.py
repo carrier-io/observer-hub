@@ -18,7 +18,7 @@ def browser():
     options.set_capability("junit_report", "test_report")
     options.set_capability("report_uid", str(uuid4()))
     # options.set_capability("report_uid", "12345")
-
+    options.set_capability("job_name", "DEMO")
     options.set_capability("galloper_url", "http://localhost")
     options.set_capability("galloper_token", os.environ.get('galloper_token'))
     options.set_capability('galloper_project_id', 1)

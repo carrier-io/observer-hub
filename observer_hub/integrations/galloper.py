@@ -23,12 +23,15 @@ def notify_on_test_start(galloper_url, galloper_project_id, galloper_token, desi
     report_uid = desired_capabilities.get('report_uid', str(uuid4()))
     env = desired_capabilities.get('venv', '')
     tz = desired_capabilities.get('tz', 'UTC')
+    version = desired_capabilities.get('version', '')
+    job_name = desired_capabilities.get('job_name', '')
 
     data = {
         "report_id": report_uid,
-        "test_name": test_name,
+        "test_name": job_name,
         "base_url": base_url,
         "browser_name": browser_name,
+        "browser_version": version,
         "env": env,
         "loops": loops,
         "aggregation": aggregation,
