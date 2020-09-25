@@ -13,7 +13,7 @@ def browser():
     # options = webdriver.FirefoxOptions()
 
     options.set_capability("version", "84.0")
-    options.set_capability("venv", "QA")
+    options.set_capability("venv", "DEV")
     options.set_capability("vnc", True)
     options.set_capability("junit_report", "test_report")
     options.set_capability("report_uid", str(uuid4()))

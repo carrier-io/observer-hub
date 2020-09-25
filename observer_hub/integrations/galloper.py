@@ -40,7 +40,7 @@ def notify_on_test_start(galloper_url, galloper_project_id, galloper_token, desi
 
     create_galloper_report(galloper_url, galloper_project_id, galloper_token, data)
 
-    return report_uid, test_name
+    return report_uid, job_name
 
 
 def notify_on_test_end(galloper_url, galloper_project_id, galloper_token, report_id, total_thresholds, exception,
