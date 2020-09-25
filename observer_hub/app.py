@@ -137,6 +137,8 @@ class Interceptor:
         container_id = None
         selenium_port = None
         video_port = None
+        browser_name = ""
+        version = ""
 
         if flow.request.path == "/status" or flow.request.path == '/favicon.ico':
             content = {"quota": QUOTA, "active": len(mapping.keys())}
