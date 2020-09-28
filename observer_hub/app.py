@@ -197,7 +197,7 @@ class Interceptor:
                 report_id, test_name = notify_on_test_start(galloper_url, galloper_project_id, galloper_token,
                                                             desired_capabilities)
                 thresholds = get_thresholds(galloper_url, galloper_project_id, galloper_token, test_name, env)
-                print()
+
                 mapping[host_hash] = {
                     "host": f"localhost:{selenium_port}",
                     "container_id": container_id,

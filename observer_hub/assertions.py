@@ -24,7 +24,6 @@ def assert_test_thresholds(test_name, all_scope_thresholds, execution_results):
 
 
 def assert_page_thresholds(execution_result, thresholds):
-    # report_title = execution_result.results['info']['title']
     page_identifier = execution_result.page_identifier
     scoped_thresholds = filter_thresholds_for(page_identifier, thresholds)
 
