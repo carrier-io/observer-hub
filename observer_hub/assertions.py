@@ -24,8 +24,9 @@ def assert_test_thresholds(test_name, all_scope_thresholds, execution_results):
 
 
 def assert_page_thresholds(execution_result, thresholds):
-    report_title = execution_result.results['info']['title']
-    scoped_thresholds = filter_thresholds_for(report_title, thresholds)
+    # report_title = execution_result.results['info']['title']
+    page_identifier = execution_result.page_identifier
+    scoped_thresholds = filter_thresholds_for(page_identifier, thresholds)
 
     threshold_results = {"total": len(scoped_thresholds), "failed": 0}
     if not thresholds:
@@ -33,7 +34,7 @@ def assert_page_thresholds(execution_result, thresholds):
 
     perf_results = JsonExporter(execution_result.results).export()['fields']
 
-    logger.info(f"=====> Assert thresholds for {report_title}")
+    logger.info(f"=====> Assert thresholds for {page_identifier}")
     for gate in scoped_thresholds:
         target_metric_name = gate["target"]
         threshold = Threshold(gate, perf_results[target_metric_name])
