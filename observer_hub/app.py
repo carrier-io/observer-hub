@@ -301,6 +301,7 @@ def start_container(browser_name, version, vnc):
         container_image,
         detach=True,
         ports=ports,
+        volumes={'/dev/shm': {'bind': '/dev/shm'}},
         environment=env,
         privileged=True
     )
