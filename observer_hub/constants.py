@@ -441,19 +441,29 @@ function checkPerformance() {
 
     function pageJquery() {
         var versions = [];
+        var reinit = false;
+        if ($ === jQuery) {
+            reinit = true
+        }
         if (typeof window.jQuery === 'function') {
             versions.push(window.jQuery.fn.jquery);
+            var store = window.jQuery;
             var old = window.jQuery;
             while (old.fn && old.fn.jquery) {
-                old = window.jQuery.noConflict(true);
-                if (!window.jQuery || !window.jQuery.fn) {
-                    break;
+                if (typeof window.jQuery.noConflict === 'function') {
+                    old = window.jQuery.noConflict(true);
+                    if (!window.jQuery || !window.jQuery.fn) {
+                        break;
+                    }
+                    if (old.fn.jquery === window.jQuery.fn.jquery) {
+                        break;
+                    }
+                    versions.push(window.jQuery.fn.jquery);
                 }
-                if (old.fn.jquery === window.jQuery.fn.jquery) {
-                    break;
-                }
-                versions.push(window.jQuery.fn.jquery);
             }
+        }
+        if (reinit === true) {
+            $ = store;
         }
         var score = versions.length > 1 ? 0 : 100
         return [score, versions]
