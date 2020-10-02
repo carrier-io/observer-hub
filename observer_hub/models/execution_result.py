@@ -3,7 +3,7 @@ from observer_hub.models.exporters import JsonExporter
 
 class ExecutionResult(object):
 
-    def __init__(self, page_identifier, results, screenshot_path=None,
+    def __init__(self, page_identifier=None, results=None, screenshot_path=None,
                  results_type="page", commands=None):
         self.page_identifier = page_identifier
         self.results = results

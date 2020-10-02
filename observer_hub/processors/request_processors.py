@@ -13,7 +13,11 @@ from observer_hub.util import is_performance_entities_changed, is_dom_changed, l
 def process_request(original_request, host, session_id, start_time, locators, commands):
     perf_agent = PerfAgent(host, session_id)
 
-    load_event_end = perf_agent.get_performance_timing()['loadEventEnd']
+    performance_timing = perf_agent.get_performance_timing()
+    if 'loadEventEnd' not in performance_timing.keys():
+        return ExecutionResult()
+
+    load_event_end = performance_timing['loadEventEnd']
     data = get_from_storage(session_id)
 
     results = None

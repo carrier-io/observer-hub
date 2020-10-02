@@ -245,7 +245,7 @@ class Interceptor:
     def response(self, flow):
         response = flow.response.content
 
-        if flow.response.status_code == 500:
+        if flow.response.status_code == 500 or flow.response.status_code == 404:
             flow.response = http.HTTPResponse.make(
                 flow.response.status_code,
                 response,
