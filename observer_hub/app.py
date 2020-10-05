@@ -123,7 +123,8 @@ class Interceptor:
             galloper_project_id = host_info['galloper_project_id']
             galloper_url = host_info['galloper_url']
             galloper_token = host_info['galloper_token']
-            process_results_for_page(galloper_url, galloper_project_id, galloper_token, report_id, results, thresholds)
+            process_results_for_page(galloper_url, galloper_project_id, galloper_token, report_id, results, thresholds,
+                                     session_id)
             execution_results.add(session_id, results)
 
         return host_hash, video_host

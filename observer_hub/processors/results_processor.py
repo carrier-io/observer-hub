@@ -113,11 +113,11 @@ def compute_results_for_spa(old, new):
 
 
 def process_results_for_page(galloper_url, galloper_project_id, galloper_token, report_id, execution_result,
-                             thresholds):
+                             thresholds, session_id):
     threshold_results = assert_page_thresholds(execution_result, thresholds)
     report = generate_html_report(execution_result, threshold_results)
     notify_on_command_end(galloper_url, galloper_project_id, galloper_token, report_id, report, execution_result,
-                          threshold_results)
+                          threshold_results, session_id)
     execution_result.report = report
 
 

@@ -70,7 +70,7 @@ def notify_on_test_end(galloper_url, galloper_project_id, galloper_token, report
 
 
 def notify_on_command_end(galloper_url, galloper_project_id, galloper_token, report_id, report, execution_result,
-                          thresholds):
+                          thresholds, session_id):
     name = execution_result.results['info']['title']
     metrics = execution_result.results
     logger.info(f"About to notify on command end for report {report_id}")
@@ -87,7 +87,8 @@ def notify_on_command_end(galloper_url, galloper_project_id, galloper_token, rep
         "browser_version": metrics['info']['browser'],
         "thresholds_total": thresholds.get("total", 0),
         "thresholds_failed": thresholds.get("failed", 0),
-        "locators": execution_result.commands
+        "locators": execution_result.commands,
+        "session_id": session_id
     }
 
     send_gelloper_report_results(galloper_url, galloper_project_id, galloper_token, report_id, data)
