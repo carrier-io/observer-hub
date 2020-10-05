@@ -442,7 +442,7 @@ function checkPerformance() {
     function pageJquery() {
         var versions = [];
         var reinit = false;
-        if (typeof jQuery !== 'undefined' && $ === jQuery) {
+        if (typeof jQuery !== 'undefined' && $ === window.jQuery) {
             reinit = true
         }
         if (typeof window.jQuery === 'function') {
