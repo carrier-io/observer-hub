@@ -86,8 +86,6 @@ def get_page_identifier(current_url, title, original_request, locators, session_
         # return f"{title}:{parsed_url.path}@before_refresh({session_id})"
 
     current_element_id = original_request.path_components[5]
-    command = original_request.path_components[6]
-    locators[current_element_id]['action'] = command
 
     if len(locators.keys()) == 2 and list(locators.keys())[0] == "open":
         url = locators['open']
