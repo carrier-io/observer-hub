@@ -276,6 +276,12 @@ class Interceptor:
             locator = json.loads(flow.request.content.decode('utf-8'))
             locators.save(session_id, element_id, locator)
 
+        if flow.request.path.endswith("/url"):
+            session_id = flow.request.path_components[3]
+            element_id = "open"
+            url = json.loads(flow.request.content.decode('utf-8'))['url']
+            locators.save(session_id, element_id, url)
+
         flow.response = http.HTTPResponse.make(
             flow.response.status_code,
             response,

@@ -42,8 +42,8 @@ class LocatorsCollector(Collector):
     def __init__(self):
         super().__init__()
 
-    def save(self, key, key2, data):
-        if key in data.keys():
-            self.data[key][key2] = data
+    def save(self, session_id, element_id, locator):
+        if session_id in self.data.keys():
+            self.data[session_id][element_id] = locator
         else:
-            self.data[key] = {key2: data}
+            self.data[session_id] = {element_id: locator}
