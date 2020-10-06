@@ -13,8 +13,9 @@ def get_headers(token):
 
 def create_galloper_report(galloper_url, galloper_project_id, galloper_token, data):
     try:
-        requests.post(f"{galloper_url}/api/v1/observer/{galloper_project_id}", json=data,
-                      headers=get_headers(galloper_token))
+        res = requests.post(f"{galloper_url}/api/v1/observer/{galloper_project_id}", json=data,
+                            headers=get_headers(galloper_token))
+        logger.info(f"Create report for {galloper_project_id} {res.json()}")
     except Exception:
         logger.error(format_exc())
 
