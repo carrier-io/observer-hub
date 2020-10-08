@@ -78,18 +78,16 @@ def get_page_identifier(current_url, title, original_request, locators, session_
     if original_request.method == "DELETE":
         locator = __find_actionable_locator(locators, len(locators))
         return f"{title}:{parsed_url.path}@{locator['action']}({locator['using']}={locator['value']})"
-        # return f"{title}:{parsed_url.path}@close_browser({session_id})"
 
     if original_request.method == "POST" and original_request.path.endswith('/url'):
         locator = __find_actionable_locator(locators, len(locators))
         return f"{title}:{parsed_url.path}@{locator['action']}({locator['using']}={locator['value']})"
-        # return f"{title}:{parsed_url.path}@before_refresh({session_id})"
 
     current_element_id = original_request.path_components[5]
 
     if len(locators.keys()) == 2 and list(locators.keys())[0] == "open":
         url = locators['open']
-        return f"{title}:{parsed_url.path}@{session_id}open({url})"
+        return f"{title}:{parsed_url.path}@open({url})"
 
     elements = list(locators.keys())
     current_element_index = elements.index(current_element_id)
