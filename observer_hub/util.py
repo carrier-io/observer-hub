@@ -168,3 +168,11 @@ def current_time(tz):
     except UnknownTimeZoneError:
         logger.warning(f"Wrong timezone {tz}. Defaulting to UTC")
         return datetime.now(tz=pytz.timezone("UTC"))
+
+
+def mark_element_actionable(original_request, locators):
+    session_id = original_request.path_components[3][32:]
+    locators_list = locators[session_id]
+    current_element_id = original_request.path_components[5]
+    command = original_request.path_components[6]
+    locators_list[current_element_id]['action'] = command

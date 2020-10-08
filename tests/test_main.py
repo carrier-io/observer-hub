@@ -58,3 +58,14 @@ def test_web_mail_selene2(browser):
     browser.element("#tree li.e-level-2[data-uid='12']").click()
     browser.element("li.e-level-1[data-uid='SF10142']").click()
     browser.element("#sub").should(have.exact_text('Elijah Berry'))
+
+
+def test_web_mail_selene3(browser):
+    browser.open('/showcase/typescript/webmail/#/home')
+    browser.element("#tree li.e-level-2[data-uid='21']").click()
+
+    browser.element("li.e-level-1[data-uid='SF10208']").click()
+    browser.element("#sub").should(have.exact_text('Zena Osborn'))
+
+    browser.element("li.e-level-1[data-uid='SF10203']").click()
+    browser.element("#sub").should(have.exact_text('Quynn Carr'))

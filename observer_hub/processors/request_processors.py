@@ -65,23 +65,42 @@ def process_request(original_request, host, session_id, start_time, locators, co
         current_url = perf_agent.get_current_url()
         os.makedirs(SCREENSHOTS_PATH, exist_ok=True)
         screenshot_path = perf_agent.take_screenshot(f"{SCREENSHOTS_PATH}/{uuid4()}.png")
-        page_identifier = get_page_identifier(current_url, results['info']['title'], original_request, locators)
+        page_identifier = get_page_identifier(current_url, results['info']['title'], original_request, locators,
+                                              session_id)
 
     return ExecutionResult(page_identifier, results, screenshot_path, results_type, commands)
 
 
-def get_page_identifier(current_url, title, original_request, locators):
+def get_page_identifier(current_url, title, original_request, locators, session_id):
     parsed_url = urlparse(current_url)
     logger.info(f"Get page identifier {original_request.path_components}")
 
     if original_request.method == "DELETE":
-        return f"{title}:{parsed_url.path}@close_browser()"
+        locator = __find_actionable_locator(locators, len(locators))
+        return f"{title}:{parsed_url.path}@{locator['action']}({locator['using']}={locator['value']})"
 
     if original_request.method == "POST" and original_request.path.endswith('/url'):
-        return f"{title}:{parsed_url.path}@before_refresh()"
+        locator = __find_actionable_locator(locators, len(locators))
+        return f"{title}:{parsed_url.path}@{locator['action']}({locator['using']}={locator['value']})"
 
-    command = original_request.path_components[6]
-    element_id = original_request.path_components[5]
-    locator = locators[element_id]
+    current_element_id = original_request.path_components[5]
 
-    return f"{title}:{parsed_url.path}@{command}({locator['using']}={locator['value']})"
+    if len(locators.keys()) == 2 and list(locators.keys())[0] == "open":
+        url = locators['open']
+        return f"{title}:{parsed_url.path}@open({url})"
+
+    elements = list(locators.keys())
+    current_element_index = elements.index(current_element_id)
+    locator = __find_actionable_locator(locators, current_element_index)
+
+    return f"{title}:{parsed_url.path}@{locator['action']}({locator['using']}={locator['value']})"
+
+
+def __find_actionable_locator(locators, current_element_index):
+    locator = {}
+    for v in reversed(list(locators.values())[:current_element_index]):
+        if isinstance(v, dict) and v.get('action') == 'click':
+            locator = v
+            break
+
+    return locator

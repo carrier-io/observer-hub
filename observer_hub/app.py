@@ -16,7 +16,7 @@ from observer_hub.models.collector import CommandsCollector, LocatorsCollector, 
 from observer_hub.processors.request_processors import process_request
 from observer_hub.processors.results_processor import process_results_for_page, process_results_for_test
 from observer_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable, \
-    logger, clean_up_data, request_to_command, get_hash
+    logger, clean_up_data, request_to_command, get_hash, mark_element_actionable
 from observer_hub.video import stop_recording, start_video_recording
 from observer_hub.wait import wait_for_page_to_load
 
@@ -160,6 +160,7 @@ class Interceptor:
                 commands.add(session_id, command)
 
         if "element" in original_request.path and is_actionable(original_request.path):
+            mark_element_actionable(original_request, locators)
             host_hash, video_host = self.process(original_request)
 
             start_time = start_video_recording(video_host)
@@ -275,6 +276,12 @@ class Interceptor:
 
             locator = json.loads(flow.request.content.decode('utf-8'))
             locators.save(session_id, element_id, locator)
+
+        if flow.request.path.endswith("/url"):
+            session_id = flow.request.path_components[3]
+            element_id = "open"
+            url = json.loads(flow.request.content.decode('utf-8'))['url']
+            locators.save(session_id, element_id, url)
 
         flow.response = http.HTTPResponse.make(
             flow.response.status_code,
