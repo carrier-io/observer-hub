@@ -2,9 +2,8 @@ import copy
 
 from deepdiff import DeepDiff
 
-from observer_hub.assertions import assert_page_thresholds, assert_test_thresholds
+from observer_hub.assertions import assert_page_thresholds
 from observer_hub.integrations.galloper import notify_on_test_end, notify_on_command_end
-from observer_hub.models.collector import ResultsCollector
 from observer_hub.reporters.html_reporter import HtmlReporter, get_test_status
 from observer_hub.reporters.junit_reporter import generate_junit_report
 from observer_hub.util import logger
@@ -122,13 +121,8 @@ def process_results_for_page(galloper_url, galloper_project_id, galloper_token, 
 
 
 def process_results_for_test(galloper_url, galloper_project_id, galloper_token, report_id, scenario_name,
-                             scenario_results, thresholds, junit_report,
+                             threshold_results, junit_report,
                              junit_report_bucket, tz):
-    result_collector = ResultsCollector()
-    for r in scenario_results:
-        result_collector.add(r.page_identifier, r)
-
-    threshold_results = assert_test_thresholds(scenario_name, thresholds, result_collector.data)
 
     junit_report_name = None
     if junit_report:

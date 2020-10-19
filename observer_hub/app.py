@@ -6,15 +6,18 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from mitmproxy import http
 from mitmproxy import proxy, options
 from mitmproxy.tools.dump import DumpMaster
+from observer_hub.assertions import assert_test_thresholds
 
 from observer_hub.integrations.galloper_api_client import get_thresholds
 from observer_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION, QUOTA, \
     VNC_PORT, PORT
 from observer_hub.docker_client import DockerClient
 from observer_hub.integrations.galloper import notify_on_test_start
-from observer_hub.models.collector import CommandsCollector, LocatorsCollector, ExecutionResultsCollector
+from observer_hub.models.collector import CommandsCollector, LocatorsCollector, ExecutionResultsCollector, \
+    ResultsCollector
 from observer_hub.processors.request_processors import process_request
 from observer_hub.processors.results_processor import process_results_for_page, process_results_for_test
+from observer_hub.reporters.jira_reporter import notify_jira
 from observer_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable, \
     logger, clean_up_data, request_to_command, get_hash, mark_element_actionable
 from observer_hub.video import stop_recording, start_video_recording
@@ -47,12 +50,12 @@ def container_inspector_job():
         logger.info(f"Container {container_id} was lastly used {diff} seconds ago")
 
         if diff >= TIMEOUT and v['session_id'] in execution_results.keys():
-            results = execution_results[v['session_id']]
-
-            junit_report_name = generate_report(results, v)
             logger.info(f"Container {container_id} usage time exceeded timeout!")
             docker_client.get_container(container_id).remove(force=True)
             logger.info(f"Container {container_id} was deleted!")
+
+            results = execution_results[v['session_id']]
+            junit_report_name = generate_reports(results, v)
 
             deleted.append(k)
             locators.pop(v['session_id'])
@@ -65,7 +68,7 @@ def container_inspector_job():
     logger.info(f'There are {len(mapping.keys())} containers running...')
 
 
-def generate_report(results, args):
+def generate_reports(results, args):
     report_id = args['report_id']
     browser_name = args['desired_capabilities']['browserName']
     version = args['desired_capabilities']['version']
@@ -78,10 +81,20 @@ def generate_report(results, args):
     tz = args['tz']
 
     test_name = f"{browser_name}_{version}"
+
+    result_collector = ResultsCollector()
+    for r in results:
+        result_collector.add(r.page_identifier, r)
+
+    threshold_results = assert_test_thresholds(test_name, thresholds, result_collector.data)
+
     _, junit_report_name = process_results_for_test(galloper_url, galloper_project_id, galloper_token, report_id,
-                                                    test_name, results, thresholds,
+                                                    test_name, threshold_results,
                                                     junit_report,
                                                     junit_report_bucket, tz)
+
+    notify_jira(test_name, threshold_results, args)
+
     return junit_report_name
 
 
