@@ -24,6 +24,11 @@ def browser():
     options.set_capability('galloper_project_id', 1)
     options.set_capability('tz', 'Europe/Kiev')
 
+    options.set_capability("jira_url", "http://localhost:8080")
+    options.set_capability("jira_project", "DEMO")
+    options.set_capability("jira_user", "")
+    options.set_capability("jira_password", "123456")
+
     driver = webdriver.Remote(command_executor='http://localhost:4444/wd/hub', options=options)
 
     browser = Browser(Config(
