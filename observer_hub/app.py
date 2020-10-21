@@ -17,6 +17,7 @@ from observer_hub.models.collector import CommandsCollector, LocatorsCollector, 
     ResultsCollector
 from observer_hub.processors.request_processors import process_request
 from observer_hub.processors.results_processor import process_results_for_page, process_results_for_test
+from observer_hub.reporters.azure_devops import notify_azure_devops
 from observer_hub.reporters.jira_reporter import notify_jira
 from observer_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable, \
     logger, clean_up_data, request_to_command, get_hash, mark_element_actionable
@@ -94,6 +95,7 @@ def generate_reports(results, args):
                                                     junit_report_bucket, tz)
 
     notify_jira(test_name, threshold_results, args)
+    notify_azure_devops(test_name, thresholds, args)
 
     return junit_report_name
 
