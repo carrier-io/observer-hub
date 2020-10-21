@@ -92,7 +92,7 @@ def notify_azure_devops(test_name, threshold_results, args):
     ado_project = caps.get('ado_project', '')
     ado_token = caps.get('ado_token', '')
     ado_team = caps.get('ado_team', '')
-    if ado_organization and ado_project and ado_token and ado_team:
+    if ado_organization and ado_project and ado_token:
         try:
             client = AdoClient(ado_organization, ado_project, ado_token, ado_team)
             client.create_issues(test_name, threshold_results["details"])
