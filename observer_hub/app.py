@@ -100,7 +100,7 @@ def generate_reports(results, args):
     notify_azure_devops(test_name, thresholds, args)
 
     if email_report:
-        init_email_notification(galloper_url, galloper_token, report_id)
+        init_email_notification(galloper_url, galloper_project_id, galloper_token, report_id)
 
     return junit_report_name
 
