@@ -4,7 +4,7 @@ import requests
 from observer_hub.util import logger
 
 
-def init_email_notification(galloper_url, galloper_project_id, galloper_token, report_id):
+def init_email_notification(galloper_url, galloper_project_id, galloper_token, report_id, test_id):
     if galloper_url and galloper_token and galloper_project_id:
         secrets_url = f"{galloper_url}/api/v1/secrets/{galloper_project_id}/"
         try:
@@ -20,7 +20,7 @@ def init_email_notification(galloper_url, galloper_project_id, galloper_token, r
 
             event = {
                 "notification_type": "ui",
-                "test_id": "",
+                "test_id": test_id,
                 "report_id": report_id
             }
 

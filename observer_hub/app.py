@@ -82,6 +82,7 @@ def generate_reports(results, args):
     galloper_token = args['galloper_token']
     tz = args['tz']
     email_report = args['desired_capabilities'].get('email_report', '')
+    test_id = args['desired_capabilities'].get('test_id', '')
 
     test_name = f"{browser_name}_{version}"
 
@@ -100,7 +101,7 @@ def generate_reports(results, args):
     notify_azure_devops(test_name, thresholds, args)
 
     if email_report:
-        init_email_notification(galloper_url, galloper_project_id, galloper_token, report_id)
+        init_email_notification(galloper_url, galloper_project_id, galloper_token, report_id, test_id)
 
     return junit_report_name
 
