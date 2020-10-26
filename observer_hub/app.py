@@ -6,18 +6,19 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from mitmproxy import http
 from mitmproxy import proxy, options
 from mitmproxy.tools.dump import DumpMaster
-from observer_hub.assertions import assert_test_thresholds
 
-from observer_hub.integrations.galloper_api_client import get_thresholds
+from observer_hub.assertions import assert_test_thresholds
 from observer_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION, QUOTA, \
     VNC_PORT, PORT
 from observer_hub.docker_client import DockerClient
 from observer_hub.integrations.galloper import notify_on_test_start
+from observer_hub.integrations.galloper_api_client import get_thresholds
 from observer_hub.models.collector import CommandsCollector, LocatorsCollector, ExecutionResultsCollector, \
     ResultsCollector
 from observer_hub.processors.request_processors import process_request
 from observer_hub.processors.results_processor import process_results_for_page, process_results_for_test
 from observer_hub.reporters.azure_devops import notify_azure_devops
+from observer_hub.reporters.email_reporter import init_email_notification
 from observer_hub.reporters.jira_reporter import notify_jira
 from observer_hub.util import wait_for_agent, get_desired_capabilities, read_config, wait_for_hub, is_actionable, \
     logger, clean_up_data, request_to_command, get_hash, mark_element_actionable
@@ -80,6 +81,7 @@ def generate_reports(results, args):
     galloper_url = args['galloper_url']
     galloper_token = args['galloper_token']
     tz = args['tz']
+    email_report = args['desired_capabilities'].get('email_report', '')
 
     test_name = f"{browser_name}_{version}"
 
@@ -96,6 +98,9 @@ def generate_reports(results, args):
 
     notify_jira(test_name, threshold_results, args)
     notify_azure_devops(test_name, thresholds, args)
+
+    if email_report:
+        init_email_notification(galloper_url, galloper_token, report_id)
 
     return junit_report_name
 
