@@ -217,15 +217,16 @@ class Interceptor:
             if container_id is not None:
                 host = f"localhost:{selenium_port}"
                 host_hash = get_hash(host)
-                report_id, test_name = notify_on_test_start(galloper_url, galloper_project_id, galloper_token,
-                                                            desired_capabilities)
-                thresholds = get_thresholds(galloper_url, galloper_project_id, galloper_token, test_name, env)
+                # report_id, test_name = notify_on_test_start(galloper_url, galloper_project_id, galloper_token,
+                #                                            desired_capabilities)
+                thresholds = get_thresholds(galloper_url, galloper_project_id, galloper_token,
+                                            desired_capabilities.get('job_name', ''), env)
 
                 mapping[host_hash] = {
                     "host": f"localhost:{selenium_port}",
                     "container_id": container_id,
                     "video": f"localhost:{video_port}",
-                    "report_id": report_id,
+                    "report_id": desired_capabilities.get('report_uid', ''),
                     "desired_capabilities": desired_capabilities,
                     "thresholds": thresholds,
                     'page_load_timeout': page_load_timeout,
