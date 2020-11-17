@@ -53,6 +53,7 @@ def notify_on_test_end(galloper_url, galloper_project_id, galloper_token, report
     data = {
         "report_id": report_id,
         "time": time.strftime('%Y-%m-%d %H:%M:%S'),
+        "status": "Finished",
         "thresholds_total": total_thresholds.get("total", 0),
         "thresholds_failed": total_thresholds.get("failed", 0)
     }
