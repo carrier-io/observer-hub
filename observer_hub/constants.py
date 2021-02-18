@@ -15,6 +15,12 @@ SCREENSHOTS_PATH = '/tmp/hub/screenshots'
 FFMPEG_PATH = os.environ.get("ffmpeg_path", "ffmpeg")
 QUOTA = int(os.environ.get("QUOTA", 5))
 REPORTS_BUCKET = os.environ.get("REPORTS_BUCKET", "reports")
+RABBIT_HOST = os.environ.get('RABBIT_HOST', 'carrier-rabbit')
+RABBIT_USER = os.environ.get('RABBIT_USER', 'user')
+RABBIT_PASSWORD = os.environ.get('RABBIT_PASSWORD', 'password')
+RABBIT_PORT = os.environ.get('RABBIT_PORT', '5672')
+RABBIT_QUEUE_NAME = os.environ.get('RABBIT_QUEUE_NAME', 'default')
+
 
 check_ui_performance = '''return (function() {
 var metas=Array.prototype.slice.call(document.querySelectorAll('meta[name][content]'));

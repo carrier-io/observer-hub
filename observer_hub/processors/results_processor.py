@@ -5,7 +5,9 @@ from deepdiff import DeepDiff
 from observer_hub.assertions import assert_page_thresholds
 from observer_hub.integrations.galloper import notify_on_test_end, notify_on_command_end
 from observer_hub.reporters.html_reporter import HtmlReporter, get_test_status
+from observer_hub.reporters.minio_reporter import MinioReporter
 from observer_hub.reporters.junit_reporter import generate_junit_report
+from observer_hub.reporters.browsertime_reporter import port_async_processing_task
 from observer_hub.util import logger
 
 
@@ -114,9 +116,12 @@ def compute_results_for_spa(old, new):
 def process_results_for_page(galloper_url, galloper_project_id, galloper_token, report_id, execution_result,
                              thresholds, session_id):
     threshold_results = assert_page_thresholds(execution_result, thresholds)
-    report = generate_html_report(execution_result, threshold_results)
-    notify_on_command_end(galloper_url, galloper_project_id, galloper_token, report_id, report, execution_result,
-                          threshold_results, session_id)
+    report, minio_package = generate_html_report(execution_result, threshold_results)
+    if execution_result.results["info"].get("url") and execution_result.results["info"].get("headers"):
+        port_async_processing_task(galloper_url, galloper_project_id, galloper_token,
+                                   execution_result, report.file_name, minio_package.file_name)
+    notify_on_command_end(galloper_url, galloper_project_id, galloper_token, report_id, report, minio_package,
+                          execution_result, threshold_results, session_id)
     execution_result.report = report
 
 
@@ -141,5 +146,9 @@ def generate_html_report(execution_result, threshold_results):
                             execution_result.results,
                             execution_result.video_folder,
                             execution_result.screenshot_path)
+    minio_reporter = MinioReporter(test_status, execution_result.video_path,
+                                   execution_result.results,
+                                   execution_result.video_folder,
+                                   execution_result.screenshot_path)
 
-    return reporter.save_report()
+    return reporter.save_report(), minio_reporter.save_report()

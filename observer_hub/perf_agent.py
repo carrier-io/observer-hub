@@ -44,5 +44,11 @@ class PerfAgent(object):
         imgdata = base64.b64decode(encoded_data)
         with open(filename, 'wb') as f:
             f.write(imgdata)
-
         return filename
+
+    def get_page_headers(self):
+        script = """var req = new XMLHttpRequest();
+req.open('GET', document.location, false);
+req.send(null);
+var headers = req.getAllResponseHeaders().toLowerCase();"""
+        return self.__execute_script(script)

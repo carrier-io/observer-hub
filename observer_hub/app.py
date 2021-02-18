@@ -11,7 +11,6 @@ from observer_hub.assertions import assert_test_thresholds
 from observer_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, VIDEO_PORT, SCREEN_RESOLUTION, QUOTA, \
     VNC_PORT, PORT
 from observer_hub.docker_client import DockerClient
-from observer_hub.integrations.galloper import notify_on_test_start
 from observer_hub.integrations.galloper_api_client import get_thresholds
 from observer_hub.models.collector import CommandsCollector, LocatorsCollector, ExecutionResultsCollector, \
     ResultsCollector
@@ -132,7 +131,6 @@ class Interceptor:
 
         results = process_request(original_request, host, session_id, start_time, locators_list,
                                   session_commands)
-
         video_host = host_info['video']
         video_folder, video_path = stop_recording(video_host)
         results.video_folder = video_folder
@@ -144,10 +142,9 @@ class Interceptor:
             galloper_project_id = host_info['galloper_project_id']
             galloper_url = host_info['galloper_url']
             galloper_token = host_info['galloper_token']
-            process_results_for_page(galloper_url, galloper_project_id, galloper_token, report_id, results, thresholds,
-                                     session_id)
+            process_results_for_page(galloper_url, galloper_project_id, galloper_token, report_id,
+                                     results, thresholds, session_id)
             execution_results.add(session_id, results)
-
         return host_hash, video_host
 
     def request(self, flow):

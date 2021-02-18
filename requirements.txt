@@ -9,3 +9,4 @@ junit_xml==1.8
 jinja2==2.11.2
 tzlocal==2.1
 jira==2.0.0
+arbiter @ https://github.com/carrier-io/arbiter.git#egg=arbiter
