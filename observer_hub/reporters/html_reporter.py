@@ -17,6 +17,9 @@ class HtmlReporter(object):
         self.title = request_params['info']['title']
         self.performance_timing = request_params['performancetiming']
         self.timing = request_params['timing']
+        self.__report_specific(test_result, video_path, request_params, screenshot_path)
+
+    def __report_specific(self, test_result, video_path, request_params, screenshot_path):
         self.acc_score, self.acc_data = accessibility_audit(request_params['accessibility'])
         self.bp_score, self.bp_data = bestpractice_audit(request_params['bestPractices'])
         self.perf_score, self.perf_data = performance_audit(request_params['performance'])
@@ -54,7 +57,7 @@ class HtmlReporter(object):
                 value['detail'] = ''
         return values
 
-    def concut_video(self, start, end, page_name, video_path):
+    def concut_video(self, start, end, page_name, video_path, encode=True):
         logger.info(f"Concut video {video_path}")
         p = Pool(7)
         res = []
@@ -65,6 +68,7 @@ class HtmlReporter(object):
                 "ms": part,
                 "test_name": page_name,
                 "processing_path": self.processing_path,
+                "encode": encode
             } for part in range(start, end, (end - start) // 8)][1:]
 
             os.makedirs(os.path.join(self.processing_path, sanitize(page_name)), exist_ok=True)
@@ -100,12 +104,12 @@ class HtmlReporter(object):
 
         return re.sub(r'[^\x00-\x7f]', r'', res)
 
-    def cut_video_to_screenshots(self, start_time, end, page_name, video_path):
+    def cut_video_to_screenshots(self, start_time, end, page_name, video_path, encode=True):
         if video_path is None:
             return []
 
         screenshots_dict = []
-        for each in self.concut_video(start_time, end, page_name, video_path):
+        for each in self.concut_video(start_time, end, page_name, video_path, encode):
             if each:
                 screenshots_dict.append(each)
         return [list(e.values())[0] for e in sorted(screenshots_dict, key=lambda d: list(d.keys()))]
@@ -121,10 +125,9 @@ class HtmlReporter(object):
 
 
 class HtmlReport(object):
-
-    def __init__(self, title, report_uuid):
+    def __init__(self, title, report_uuid, extension="html"):
         self.report_uuid = report_uuid
-        self.file_name = f"{title}_{report_uuid}.html"
+        self.file_name = f"{title}_{report_uuid}.{extension}"
         self.path = f"{REPORT_PATH}/{self.file_name}"
 
 
@@ -138,8 +141,14 @@ def trim_screenshot(kwargs):
         command = f'{FFMPEG_PATH} -ss {str(round(kwargs["ms"] / 1000, 3))} -i {kwargs["video_path"]} ' \
                   f'-vframes 1 {image_path}'
         Popen(command, stderr=PIPE, shell=True, universal_newlines=True).communicate()
-        with open(image_path, "rb") as image_file:
-            return {kwargs["ms"]: base64.b64encode(image_file.read()).decode("utf-8")}
+        if kwargs.get("encode", True):
+            with open(image_path, "rb") as image_file:
+                return {kwargs["ms"]: base64.b64encode(image_file.read()).decode("utf-8")}
+        else:
+            return {kwargs["ms"]: {
+                "path": image_path,
+                "name": f'{str(kwargs["ms"])}_out.jpg'}
+            }
     except FileNotFoundError:
         from traceback import format_exc
         logger.warn(format_exc())

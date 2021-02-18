@@ -70,8 +70,8 @@ def notify_on_test_end(galloper_url, galloper_project_id, galloper_token, report
                          junit_report_name)
 
 
-def notify_on_command_end(galloper_url, galloper_project_id, galloper_token, report_id, report, execution_result,
-                          thresholds, session_id):
+def notify_on_command_end(galloper_url, galloper_project_id, galloper_token, report_id, report, minio_package,
+                          execution_result, thresholds, session_id):
     name = execution_result.results['info']['title']
     metrics = execution_result.results
     logger.info(f"About to notify on command end for report {report_id}")
@@ -95,3 +95,5 @@ def notify_on_command_end(galloper_url, galloper_project_id, galloper_token, rep
     send_gelloper_report_results(galloper_url, galloper_project_id, galloper_token, report_id, data)
 
     upload_artifacts(galloper_url, galloper_project_id, galloper_token, REPORTS_BUCKET, report.path, report.file_name)
+    upload_artifacts(galloper_url, galloper_project_id, galloper_token, REPORTS_BUCKET,
+                     minio_package.path, minio_package.file_name)
