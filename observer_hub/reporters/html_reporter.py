@@ -17,9 +17,9 @@ class HtmlReporter(object):
         self.title = request_params['info']['title']
         self.performance_timing = request_params['performancetiming']
         self.timing = request_params['timing']
-        self.__report_specific(test_result, video_path, request_params, screenshot_path)
+        self.report_specific(test_result, video_path, request_params, screenshot_path)
 
-    def __report_specific(self, test_result, video_path, request_params, screenshot_path):
+    def report_specific(self, test_result, video_path, request_params, screenshot_path):
         self.acc_score, self.acc_data = accessibility_audit(request_params['accessibility'])
         self.bp_score, self.bp_data = bestpractice_audit(request_params['bestPractices'])
         self.perf_score, self.perf_data = performance_audit(request_params['performance'])
@@ -44,14 +44,14 @@ class HtmlReporter(object):
                                        bp_findings=self.bp_data,
                                        priv_findings=self.priv_data,
                                        resource_timing=request_params['performanceResources'],
-                                       marks=self.__fix_details(request_params['marks']),
-                                       measures=self.__fix_details(request_params['measures']),
+                                       marks=self.fix_details(request_params['marks']),
+                                       measures=self.fix_details(request_params['measures']),
                                        navigation_timing=request_params['performancetiming'],
                                        info=request_params['info'],
                                        timing=request_params['timing'],
                                        base64_full_page_screen=base64_encoded_string)
 
-    def __fix_details(self, values):
+    def fix_details(self, values):
         for value in values:
             if "detail" in value.keys() and value["detail"] is None:
                 value['detail'] = ''
@@ -112,7 +112,10 @@ class HtmlReporter(object):
         for each in self.concut_video(start_time, end, page_name, video_path, encode):
             if each:
                 screenshots_dict.append(each)
-        return [list(e.values())[0] for e in sorted(screenshots_dict, key=lambda d: list(d.keys()))]
+        if encode:
+            return [list(e.values())[0] for e in sorted(screenshots_dict, key=lambda d: list(d.keys()))]
+        else:
+            return screenshots_dict
 
     def save_report(self):
         report_uuid = uuid4()
@@ -145,10 +148,12 @@ def trim_screenshot(kwargs):
             with open(image_path, "rb") as image_file:
                 return {kwargs["ms"]: base64.b64encode(image_file.read()).decode("utf-8")}
         else:
-            return {kwargs["ms"]: {
-                "path": image_path,
-                "name": f'{str(kwargs["ms"])}_out.jpg'}
-            }
+            if os.path.exists(image_path):
+                return {kwargs["ms"]: {
+                    "path": image_path,
+                    "name": f'{str(kwargs["ms"])}_out.jpg'}
+                }
+            raise FileNotFoundError()
     except FileNotFoundError:
         from traceback import format_exc
         logger.warn(format_exc())

@@ -1,5 +1,4 @@
 import copy
-
 from deepdiff import DeepDiff
 
 from observer_hub.assertions import assert_page_thresholds

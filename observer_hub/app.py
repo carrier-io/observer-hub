@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-
 import docker
 from apscheduler.schedulers.background import BackgroundScheduler
 from mitmproxy import http
@@ -135,7 +134,6 @@ class Interceptor:
         video_folder, video_path = stop_recording(video_host)
         results.video_folder = video_folder
         results.video_path = video_path
-
         if results.results:
             report_id = host_info["report_id"]
             thresholds = host_info['thresholds']
