@@ -1,6 +1,6 @@
 mitmproxy==5.2
 docker==4.2.2
-requests==2.24.0
+requests==2.25.0
 apscheduler==3.6.3
 deepdiff~=5.0.2
 influxdb~=5.3.0
