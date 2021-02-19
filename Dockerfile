@@ -1,7 +1,7 @@
 FROM python:3.7-alpine
 
 RUN apk add build-base libffi-dev openssl-dev
-RUN apk add --no-cache ffmpeg
+RUN apk add --update --no-cache ffmpeg git
 
 RUN pip install --upgrade pip
 RUN pip install --upgrade setuptools
