@@ -33,7 +33,7 @@ class MinioReporter(HtmlReporter):
         """
         report_uuid = uuid4()
         os.makedirs(REPORT_PATH, exist_ok=True)
-        minio_path = os.path.join(REPORT_PATH, f'_{report_uuid}')
+        minio_path = os.path.join(REPORT_PATH, f'observer_{report_uuid}')
         os.makedirs(minio_path, exist_ok=True)
         with open(os.path.join(minio_path, 'package.json'), 'w') as f:
             f.write(dumps(self.package, indent=2))
@@ -44,4 +44,4 @@ class MinioReporter(HtmlReporter):
             except FileNotFoundError:
                 pass
         shutil.make_archive(minio_path, 'zip', minio_path)
-        return HtmlReport('', report_uuid, "zip")
+        return HtmlReport('observer', report_uuid, "zip")

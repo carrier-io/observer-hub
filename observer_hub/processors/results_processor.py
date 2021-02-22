@@ -116,7 +116,10 @@ def process_results_for_page(galloper_url, galloper_project_id, galloper_token, 
                              thresholds, session_id):
     threshold_results = assert_page_thresholds(execution_result, thresholds)
     report, minio_package = generate_html_report(execution_result, threshold_results)
-    if execution_result.results["info"].get("url") and execution_result.results["info"].get("headers"):
+    logger.info(execution_result.results["info"].get("url"))
+    logger.info(execution_result.results["info"].get("headers"))
+    if execution_result.results["info"].get("url"):
+        logger.info("About to start browsertime")
         port_async_processing_task(galloper_url, galloper_project_id, galloper_token,
                                    execution_result, report.file_name, minio_package.file_name)
     notify_on_command_end(galloper_url, galloper_project_id, galloper_token, report_id, report, minio_package,

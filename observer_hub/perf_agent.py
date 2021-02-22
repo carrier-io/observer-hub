@@ -50,5 +50,13 @@ class PerfAgent(object):
         script = """var req = new XMLHttpRequest();
 req.open('GET', document.location, false);
 req.send(null);
-var headers = req.getAllResponseHeaders().toLowerCase();"""
-        return self.__execute_script(script)
+return req.getAllResponseHeaders().toLowerCase();"""
+        headers = self.__execute_script(script)
+        headers_json = dict()
+        for line in headers.strip().split('\n'):
+            line_arr = line.split(":")
+            try:
+                headers_json[line_arr[0].strip()] = line_arr[1].strip()
+            except IndexError:
+                continue
+        return headers_json
