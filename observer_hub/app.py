@@ -11,6 +11,7 @@ from observer_hub.constants import TIMEOUT, SCHEDULER_INTERVAL, SELENIUM_PORT, V
     VNC_PORT, PORT
 from observer_hub.docker_client import DockerClient
 from observer_hub.integrations.galloper_api_client import get_thresholds
+from observer_hub.integrations.galloper import notify_on_test_start
 from observer_hub.models.collector import CommandsCollector, LocatorsCollector, ExecutionResultsCollector, \
     ResultsCollector
 from observer_hub.processors.request_processors import process_request
@@ -212,8 +213,10 @@ class Interceptor:
             if container_id is not None:
                 host = f"localhost:{selenium_port}"
                 host_hash = get_hash(host)
-                # report_id, test_name = notify_on_test_start(galloper_url, galloper_project_id, galloper_token,
-                #                                            desired_capabilities)
+                report_id = desired_capabilities.get("report_uid")
+                if not report_id:
+                    report_id, test_name = notify_on_test_start(galloper_url, galloper_project_id, galloper_token,
+                                                                desired_capabilities)
                 thresholds = get_thresholds(galloper_url, galloper_project_id, galloper_token,
                                             desired_capabilities.get('job_name', ''), env)
 
@@ -221,7 +224,7 @@ class Interceptor:
                     "host": f"localhost:{selenium_port}",
                     "container_id": container_id,
                     "video": f"localhost:{video_port}",
-                    "report_id": desired_capabilities.get('report_uid', ''),
+                    "report_id": report_id,
                     "desired_capabilities": desired_capabilities,
                     "thresholds": thresholds,
                     'page_load_timeout': page_load_timeout,
