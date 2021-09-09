@@ -1,4 +1,4 @@
-mitmproxy==5.3.0
+mitmproxy==5.2
 docker==4.2.2
 requests==2.25.0
 apscheduler==3.6.3
